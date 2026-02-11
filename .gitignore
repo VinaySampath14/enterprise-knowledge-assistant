@@ -1,0 +1,23 @@
+﻿# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local env
+.env
+
+# Generated artifacts (do not commit)
+data/processed/
+indexes/
+logs/
+models/cache/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/

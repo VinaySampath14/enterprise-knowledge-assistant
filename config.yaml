@@ -1,0 +1,17 @@
+# =========================================
+# Enterprise Knowledge Assistant - Config
+# =========================================
+
+chunking:
+  chunk_size: 800        # characters per chunk
+  overlap: 150           # character overlap between chunks
+
+embeddings:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+
+retrieval:
+  top_k: 5               # number of chunks to retrieve
+
+confidence:
+  threshold_high: 0.40   # strong evidence → answer
+  threshold_low: 0.25    # weak evidence → refuse
