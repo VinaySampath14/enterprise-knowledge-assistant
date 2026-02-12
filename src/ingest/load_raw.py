@@ -1,3 +1,4 @@
+# src/ingest/load_raw.py
 from __future__ import annotations
 
 import hashlib
@@ -15,9 +16,7 @@ def _sha256_text(text: str) -> str:
 
 
 def _module_name_from_path(p: Path) -> str:
-    # pathlib.rst -> pathlib
-    # os.path.rst -> os.path
-    return p.stem
+    return p.stem  # pathlib.rst -> pathlib ; os.path.rst -> os.path
 
 
 def iter_rst_files(root_dir: Path) -> Iterator[Path]:
@@ -31,11 +30,15 @@ def load_raw_docs(
     *,
     id_prefix: str = "py-stdlib",
     include_empty: bool = False,
+    store_repo_relative_paths: bool = True,
 ) -> List[Dict]:
     """
-    Load all .rst files under root_dir.
-    Output records are ready to write to data/processed/docs.jsonl.
+    Stage 1: raw .rst files -> docs records for docs.jsonl
+
+    Output keys (schema):
+      - id, module, source{path,type}, text, sha256, created_at
     """
+    created_at = _utc_now_iso()
     records: List[Dict] = []
 
     for fp in iter_rst_files(root_dir):
@@ -43,18 +46,23 @@ def load_raw_docs(
         if (not text.strip()) and (not include_empty):
             continue
 
-        rel = fp.relative_to(root_dir).as_posix()  # stable relative path
+        rel = fp.relative_to(root_dir).as_posix()
         doc_id = f"{id_prefix}:{rel}"
         module = _module_name_from_path(fp)
+
+        if store_repo_relative_paths:
+            source_path = f"data/raw/python_stdlib/{rel}"
+        else:
+            source_path = fp.as_posix()
 
         records.append(
             {
                 "id": doc_id,
                 "module": module,
-                "source_path": fp.as_posix(),
+                "source": {"path": source_path, "type": "rst"},
                 "text": text,
                 "sha256": _sha256_text(text),
-                "created_at": _utc_now_iso(),
+                "created_at": created_at,
             }
         )
 
