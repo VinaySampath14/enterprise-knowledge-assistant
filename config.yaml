@@ -22,3 +22,13 @@ confidence:
   threshold_high: 0.40
   threshold_low: 0.25
   margin_min: 0.03
+
+logging:
+  enabled: true
+  path: "logs/queries.jsonl"
+ 
+
+generation:
+  enabled: true
+  model: "gpt-4o-mini"
+  temperature: 0.0

@@ -1,55 +1,61 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, Optional
 import os
+import yaml
 
-from openai import OpenAI
 from dotenv import load_dotenv
 
 from src.rag.prompt import build_prompt
 from src.rag.confidence import ConfidenceResult
-from src.retrieval.retriever import RetrievedChunk
 
 
 class Generator:
-    def __init__(self, repo_root: Path):
-        load_dotenv()
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment.")
+    def __init__(self, repo_root: Path, *, config_path: Optional[Path] = None):
+        self.repo_root = repo_root
+        self.config_path = config_path or (repo_root / "config.yaml")
 
-        self.client = OpenAI(api_key=api_key)
-        self.model = "gpt-4o-mini"  # cost-efficient + strong
+        with self.config_path.open("r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+
+        gen_cfg = cfg.get("generation", {})
+        self.enabled = bool(gen_cfg.get("enabled", True))
+        self.model = str(gen_cfg.get("model", "gpt-4o-mini"))
+        self.temperature = float(gen_cfg.get("temperature", 0.0))
+
+        self._client = None
+
+        # Only require OpenAI if generation is enabled
+        if self.enabled:
+            load_dotenv(dotenv_path=self.repo_root / ".env")
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY not found in environment (.env).")
+
+            from openai import OpenAI  # import only when needed
+            self._client = OpenAI(api_key=api_key)
 
     def _call_llm(self, prompt: str) -> str:
-        print("[GEN] Calling OpenAI")
-        
-        response = self.client.chat.completions.create(
+        assert self._client is not None, "OpenAI client not initialized"
+        resp = self._client.chat.completions.create(
             model=self.model,
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a Python Standard Library documentation assistant. "
-                               "Answer only using provided context. "
-                               "Do not hallucinate."
+                    "content": (
+                        "You are a Python Standard Library documentation assistant. "
+                        "Answer only using the provided context. "
+                        "If the answer is not supported by the context, say you don't have enough information."
+                    ),
                 },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.0,
+            temperature=self.temperature,
         )
-        
-
-        return response.choices[0].message.content.strip()
-    
-
-    
+        return resp.choices[0].message.content.strip()
 
     def generate(self, query: str, confidence: ConfidenceResult) -> Dict[str, Any]:
-
         if confidence.decision == "refuse":
             return {
                 "type": "refuse",
@@ -60,25 +66,25 @@ class Generator:
         if confidence.decision == "clarify":
             return {
                 "type": "clarify",
-                "answer": "Could you clarify your question or specify which Python module you are referring to?",
+                "answer": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?",
                 "confidence": confidence.confidence,
             }
 
-        # ANSWER case
-        prompt = build_prompt(query, confidence.used_chunks)
+        # answer
+        if not self.enabled:
+            # Fallback: return a short evidence snippet (keeps API usable without OpenAI)
+            snippet = confidence.used_chunks[0].text[:500] if confidence.used_chunks else ""
+            return {
+                "type": "answer",
+                "answer": snippet,
+                "confidence": confidence.confidence,
+            }
 
+        prompt = build_prompt(query, confidence.used_chunks)
         llm_answer = self._call_llm(prompt)
 
         return {
             "type": "answer",
             "answer": llm_answer,
             "confidence": confidence.confidence,
-            "sources": [
-                {
-                    "chunk_id": c.chunk_id,
-                    "module": c.module,
-                    "score": c.score,
-                }
-                for c in confidence.used_chunks
-            ],
         }
