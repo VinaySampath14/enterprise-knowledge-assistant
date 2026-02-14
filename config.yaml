@@ -21,3 +21,4 @@ retrieval:
 confidence:
   threshold_high: 0.40
   threshold_low: 0.25
+  margin_min: 0.03
