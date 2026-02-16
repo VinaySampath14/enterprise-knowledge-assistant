@@ -1,0 +1,26 @@
+{"id":"q001","query":"How do I open a sqlite3 connection?","expected_type":"answer","tags":["sqlite3"]}
+{"id":"q002","query":"How do I write JSON to a file?","expected_type":"answer","tags":["json"]}
+{"id":"q003","query":"How do I read a CSV file in Python?","expected_type":"answer","tags":["csv"]}
+{"id":"q004","query":"How do I create a temporary file?","expected_type":"answer","tags":["tempfile"]}
+{"id":"q005","query":"How do I join two paths using pathlib?","expected_type":"answer","tags":["pathlib"]}
+{"id":"q006","query":"How do I list files using glob?","expected_type":"answer","tags":["glob"]}
+{"id":"q007","query":"How do I copy a directory with shutil?","expected_type":"answer","tags":["shutil"]}
+{"id":"q008","query":"How do I parse command line arguments using argparse?","expected_type":"answer","tags":["argparse"]}
+{"id":"q009","query":"How do I make an HTTP request using urllib.request?","expected_type":"answer","tags":["urllib.request"]}
+{"id":"q010","query":"How do I use logging.basicConfig?","expected_type":"answer","tags":["logging"]}
+{"id":"q011","query":"How do I create a thread in Python?","expected_type":"answer","tags":["threading"]}
+{"id":"q012","query":"How do I run a function with ProcessPoolExecutor?","expected_type":"answer","tags":["concurrent.futures"]}
+{"id":"q013","query":"How do I schedule a coroutine in asyncio?","expected_type":"answer","tags":["asyncio"]}
+{"id":"q014","query":"How do I use collections.Counter?","expected_type":"answer","tags":["collections"]}
+{"id":"q015","query":"How do I sort with a key function using functools?","expected_type":"answer","tags":["functools"]}
+
+{"id":"q101","query":"What is the capital of France?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q102","query":"Who won the FIFA world cup in 2018?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q103","query":"Explain photosynthesis.","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q104","query":"What is the best laptop under 1000 euros?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q105","query":"Write a poem about love.","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q106","query":"What are the symptoms of flu?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q107","query":"How to invest in stocks?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q108","query":"What is the weather in Berlin?","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q109","query":"Translate this sentence to German: I like apples.","expected_type":"refuse","tags":["out_of_domain"]}
+{"id":"q110","query":"Tell me a joke.","expected_type":"refuse","tags":["out_of_domain"]}

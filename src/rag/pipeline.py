@@ -1,15 +1,30 @@
 from __future__ import annotations
 
+import time
+import uuid
 from pathlib import Path
-from typing import Dict, Any, Optional
-import yaml
+from typing import Dict, Any, List
 
 from src.retrieval.retriever import Retriever
 from src.rag.confidence import ConfidenceGate
 from src.rag.generator import Generator
-from src.utils.timing import Timer
-from src.utils.query_logger import QueryLogger
-from src.api.schemas import QueryResponse, ResponseMeta, SourceItem
+
+
+def _is_refusal_text(text: str) -> bool:
+    if not text:
+        return True
+
+    t = text.lower()
+
+    patterns = [
+        "i don't have enough information",
+        "not in the documentation",
+        "cannot find",
+        "not available in the provided documentation",
+        "i do not have enough information"
+    ]
+
+    return any(p in t for p in patterns)
 
 
 class RAGPipeline:
@@ -19,76 +34,77 @@ class RAGPipeline:
         self.gate = ConfidenceGate(repo_root)
         self.generator = Generator(repo_root)
 
-        cfg_path = repo_root / "config.yaml"
-        with cfg_path.open("r", encoding="utf-8") as f:
-            self.cfg = yaml.safe_load(f)
+    def run(self, query: str, request_id: str | None = None) -> Dict[str, Any]:
+        request_id = request_id or str(uuid.uuid4())
 
-        log_cfg = self.cfg.get("logging", {})
-        self.logging_enabled = bool(log_cfg.get("enabled", True))
-        log_path = repo_root / log_cfg.get("path", "logs/queries.jsonl")
-        self.query_logger = QueryLogger(log_path)
+        t0 = time.perf_counter()
 
-        print("LOGGING ENABLED:", self.logging_enabled)
-        print("LOG PATH:", log_path)
-
-
-    def run(self, query: str, *, request_id: Optional[str] = None) -> Dict[str, Any]:
-        t_total = Timer.begin()
-
-        # Retrieval
-        t_ret = Timer.begin()
+        # --- Retrieval ---
+        t_retrieval_start = time.perf_counter()
         hits = self.retriever.retrieve(query)
-        ret_ms = t_ret.ms()
+        t_retrieval_end = time.perf_counter()
 
-        # Confidence
-        conf = self.gate.decide(hits)
+        decision = self.gate.decide(hits)
 
-        # Generation
-        t_gen = Timer.begin()
-        gen_out = self.generator.generate(query, conf)
-        gen_ms = t_gen.ms()
+        sources: List[Dict[str, Any]] = []
+        answer_text = ""
+        result_type = decision.decision
 
-        # Sources (attach what was used, not just what was retrieved)
-        sources = []
-        for c in conf.used_chunks:
-            sources.append(
-                SourceItem(
-                    chunk_id=c.chunk_id,
-                    doc_id=c.doc_id,
-                    module=c.module,
-                    score=float(c.score),
-                    source_path=c.meta.get("source_path"),
-                )
+        # --- If refuse ---
+        if decision.decision == "refuse":
+            result_type = "refuse"
+            answer_text = (
+                "I do not have enough information in the Python standard library documentation to answer that."
             )
 
-        meta = ResponseMeta(
-            top_score=float(conf.top_score),
-            retrieved_k=len(hits),
-            latency_ms_total=t_total.ms(),
-            latency_ms_retrieval=ret_ms,
-            latency_ms_generation=gen_ms,
-        )
+        # --- If clarify ---
+        elif decision.decision == "clarify":
+            result_type = "clarify"
+            answer_text = (
+                "Could you clarify your question (e.g., which module/function you mean) "
+                "so I can look it up in the documentation?"
+            )
 
-        resp = QueryResponse(
-            type=gen_out["type"],
-            answer=gen_out["answer"],
-            confidence=float(gen_out["confidence"]),
-            sources=sources,
-            meta=meta,
-        )
+        # --- If answer ---
+        else:
+            t_gen_start = time.perf_counter()
+            answer_text = self.generator.generate(query, decision.used_chunks)
+            t_gen_end = time.perf_counter()
 
-        out = resp.model_dump()
+            # 🔒 Post-generation refusal override
+            if _is_refusal_text(answer_text):
+                result_type = "refuse"
+                sources = []
+            else:
+                result_type = "answer"
+                for h in decision.used_chunks:
+                    sources.append(
+                        {
+                            "chunk_id": h.chunk_id,
+                            "doc_id": h.doc_id,
+                            "module": h.module,
+                            "score": float(h.score),
+                            "source_path": h.meta.get("source_path", ""),
+                        }
+                    )
 
-        # Structured log record (store summary + sources)
-        if self.logging_enabled:
-            log_record = {
-                "query": query,
-                "type": out["type"],
-                "confidence": out["confidence"],
-                "meta": out["meta"],
-                "sources": out.get("sources", []),
-            }
-            rid = self.query_logger.log(log_record, request_id=request_id)
-            out["meta"]["request_id"] = rid
+        t1 = time.perf_counter()
 
-        return out
+        return {
+            "type": result_type,
+            "answer": answer_text,
+            "confidence": float(decision.confidence),
+            "sources": sources,
+            "meta": {
+                "top_score": float(decision.top_score),
+                "retrieved_k": len(hits),
+                "latency_ms_total": (t1 - t0) * 1000,
+                "latency_ms_retrieval": (t_retrieval_end - t_retrieval_start) * 1000,
+                "latency_ms_generation": (
+                    (t_gen_end - t_gen_start) * 1000
+                    if decision.decision == "answer"
+                    else 0.0
+                ),
+                "request_id": request_id,
+            },
+        }

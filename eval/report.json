@@ -1,0 +1,21 @@
+{
+  "total": 25,
+  "accuracy_expected_type": 0.96,
+  "refusal_correctness": 0.9,
+  "answer_correctness": 1.0,
+  "pred_type_counts": {
+    "answer": 15,
+    "refuse": 9,
+    "clarify": 1
+  },
+  "expected_type_counts": {
+    "answer": 15,
+    "refuse": 10
+  },
+  "avg_latency_ms_total": 1738.0153040029109,
+  "avg_top_score": 0.45625031530857085,
+  "avg_groundedness": 0.439050500297022,
+  "avg_groundedness_answer": 0.7317508338283699,
+  "avg_groundedness_refuse": 0.0,
+  "avg_groundedness_clarify": 0.0
+}
