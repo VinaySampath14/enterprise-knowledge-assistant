@@ -493,82 +493,11 @@ python scripts/validate_index.py
 
 ---
 
-## 🌍 German Market Considerations
-
-### Gesetzliche Anforderungen (Legal)
-- ✅ **GDPR Compliant**: No personally identifiable information stored
-- ✅ **Data Residency**: All processing can occur in German/EU data centers
-- ✅ **Transparency**: Full audit trail in query logs
-
-### Language & Content
-- Uses English documentation (Python stdlib)
-- Easy to extend with German-language datasets
-- Infrastructure supports multilingual embeddings (`distiluse-base-multilingual-cased-v2`)
-
-### Enterprise Readiness
-- **Logging**: Structured JSON logs for compliance audit
-- **Monitoring**: Performance metrics per component
-- **Scalability**: FAISS → Qdrant for distributed deployments
-- **Cost Control**: Query caching to reduce LLM costs
-
----
-
-## 🚦 Production Checklist
-
-- [ ] OPENAI_API_KEY configured in production environment
-- [ ] FAISS index pre-built and validated
-- [ ] Query logging enabled
-- [ ] Health check endpoint monitored
-- [ ] Rate limiting configured
-- [ ] Request timeout set (60s recommended)
-- [ ] TLS/SSL enabled (HTTPS)
-- [ ] Database connected (PostgreSQL recommended for query analytics)
-- [ ] Error tracking configured (Sentry/DataDog)
-- [ ] Backup strategy for FAISS index
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Write tests for your changes
-4. Ensure all tests pass: `pytest tests/`
-5. Format code: `black src/ && isort src/`
-6. Submit a pull request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
----
-
-## 📚 Additional Resources
-
-- **Architecture Decision Records**: See `docs/adr/` folder
-- **API Docs (Auto-generated)**: http://localhost:8000/docs (when running)
-- **Configuration Guide**: See `docs/CONFIG.md`
-- **Deployment Guide**: See `docs/DEPLOYMENT.md`
-- **German Docs**: See `docs/de/README.md`
-
----
-
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file
 
----
 
-## 🎯 Roadmap
-
-- [ ] Multi-model support (Llama 2, Mistral)
-- [ ] Hybrid search (BM25 + semantic)
-- [ ] Fine-tuning pipeline
-- [ ] German language support
-- [ ] Kubernetes deployment manifests
-- [ ] Real-time index updates
-- [ ] Web UI for testing
-- [ ] Analytics dashboard
 
 ---
 
