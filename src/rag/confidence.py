@@ -4,8 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
-import yaml
-
+from src.config import load_app_config
 from src.retrieval.retriever import RetrievedChunk
 
 Decision = Literal["answer", "clarify", "refuse"]
@@ -39,18 +38,14 @@ class ConfidenceGate:
 
     def __init__(self, repo_root: Path, *, config_path: Optional[Path] = None):
         self.repo_root = repo_root
-        self.config_path = config_path or (repo_root / "config.yaml")
+        cfg, self.config_path = load_app_config(repo_root, config_path)
 
-        with self.config_path.open("r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
-
-        conf = cfg.get("confidence", {})
-        self.th_high = float(conf.get("threshold_high", 0.40))
-        self.th_low = float(conf.get("threshold_low", 0.25))
+        self.th_high = float(cfg.confidence.threshold_high)
+        self.th_low = float(cfg.confidence.threshold_low)
         # margin_min is only applied when top hits disagree in topic
-        self.margin_min = float(conf.get("margin_min", 0.03))
+        self.margin_min = float(cfg.confidence.margin_min)
 
-        self.max_chunks = int(cfg.get("retrieval", {}).get("top_k", 5))
+        self.max_chunks = int(cfg.retrieval.top_k)
 
         if not (self.th_low < self.th_high):
             raise ValueError("confidence.threshold_low must be < confidence.threshold_high")

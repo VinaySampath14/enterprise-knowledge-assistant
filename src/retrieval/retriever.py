@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-import yaml
 import faiss
 
+from src.config import load_app_config
 from src.embeddings.embedder import Embedder
 from src.utils.jsonl import iter_jsonl
 
@@ -19,6 +19,8 @@ class RetrievedChunk:
     module: str
     score: float
     text: str
+    source_path: Optional[str]
+    heading: Optional[str]
     meta: Dict[str, Any]
     start_char: int
     end_char: int
@@ -47,13 +49,10 @@ class FaissMetaStore:
 class Retriever:
     def __init__(self, repo_root: Path, *, config_path: Optional[Path] = None):
         self.repo_root = repo_root
-        self.config_path = config_path or (repo_root / "config.yaml")
+        self.cfg, self.config_path = load_app_config(repo_root, config_path)
 
-        with self.config_path.open("r", encoding="utf-8") as f:
-            self.cfg = yaml.safe_load(f)
-
-        index_path = repo_root / self.cfg["index"]["index_path"]
-        meta_path = repo_root / self.cfg["index"]["meta_path"]
+        index_path = repo_root / self.cfg.index.index_path
+        meta_path = repo_root / self.cfg.index.meta_path
 
         if not index_path.exists():
             raise FileNotFoundError(f"FAISS index not found: {index_path}")
@@ -76,7 +75,7 @@ class Retriever:
         self.embedder = Embedder(self.config_path)
 
         # top_k from config
-        self.top_k = int(self.cfg["retrieval"].get("top_k", 5))
+        self.top_k = int(self.cfg.retrieval.top_k)
 
     def retrieve(self, query: str, *, top_k: Optional[int] = None) -> List[RetrievedChunk]:
         k = int(top_k or self.top_k)
@@ -101,6 +100,7 @@ class Retriever:
                 continue  # FAISS may return -1 if not enough entries
 
             rec = self.meta_store.get(int(vid))
+            rec_meta = rec.get("meta") or {}
             results.append(
                 RetrievedChunk(
                     chunk_id=rec["chunk_id"],
@@ -108,7 +108,9 @@ class Retriever:
                     module=rec["module"],
                     score=float(score),
                     text=rec["text"],
-                    meta=rec.get("meta", {}),
+                    source_path=rec_meta.get("source_path"),
+                    heading=rec_meta.get("heading"),
+                    meta=rec_meta,
                     start_char=int(rec["start_char"]),
                     end_char=int(rec["end_char"]),
                     chunk_index=int(rec["chunk_index"]),

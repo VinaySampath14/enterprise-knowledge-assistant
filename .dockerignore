@@ -1,0 +1,26 @@
+# VCS and editor
+.git
+.gitignore
+.vscode
+
+# Python cache and local env
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Artifacts not required for API runtime
+tests/
+eval/
+models/
+data/raw/
+data/processed/
+*.ipynb
+
+# Local logs and OS noise
+logs/*.jsonl
+.DS_Store
+Thumbs.db

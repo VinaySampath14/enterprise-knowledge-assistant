@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import time
 import uuid
 from pathlib import Path
@@ -8,6 +9,7 @@ from typing import Dict, Any, List
 from src.retrieval.retriever import Retriever
 from src.rag.confidence import ConfidenceGate
 from src.rag.generator import Generator
+from src.rag.prompt import format_retrieved_chunks
 
 
 def _is_refusal_text(text: str) -> bool:
@@ -25,6 +27,40 @@ def _is_refusal_text(text: str) -> bool:
     ]
 
     return any(p in t for p in patterns)
+
+
+def _extract_citation_ids(answer_text: str) -> List[int]:
+    """
+    Extract citation ids from patterns like [1], [1][2], [1, 2].
+    Returns unique ids in first-appearance order.
+    """
+    if not answer_text:
+        return []
+
+    seen: set[int] = set()
+    ordered: List[int] = []
+
+    # Matches bracketed groups containing digits and optional comma-separated digits.
+    # Examples captured: [1], [1,2], [1, 2], and each bracket in [1][2].
+    for match in re.findall(r"\[(\d+(?:\s*,\s*\d+)*)\]", answer_text):
+        for token in match.split(","):
+            token = token.strip()
+            if not token:
+                continue
+            cid = int(token)
+            if cid not in seen:
+                seen.add(cid)
+                ordered.append(cid)
+
+    return ordered
+
+
+def _build_citations_from_ids(
+    citation_ids: List[int],
+    source_mapping: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    by_id = {int(s["id"]): s for s in source_mapping}
+    return [by_id[cid] for cid in citation_ids if cid in by_id]
 
 
 class RAGPipeline:
@@ -47,6 +83,7 @@ class RAGPipeline:
         decision = self.gate.decide(hits)
 
         sources: List[Dict[str, Any]] = []
+        citations: List[Dict[str, Any]] = []
         answer_text = ""
         result_type = decision.decision
 
@@ -75,8 +112,16 @@ class RAGPipeline:
             if _is_refusal_text(answer_text):
                 result_type = "refuse"
                 sources = []
+                citations = []
             else:
                 result_type = "answer"
+                try:
+                    _, source_mapping = format_retrieved_chunks(decision.used_chunks)
+                    citation_ids = _extract_citation_ids(answer_text)
+                    citations = _build_citations_from_ids(citation_ids, source_mapping)
+                except Exception:
+                    citations = []
+
                 for h in decision.used_chunks:
                     sources.append(
                         {
@@ -84,7 +129,7 @@ class RAGPipeline:
                             "doc_id": h.doc_id,
                             "module": h.module,
                             "score": float(h.score),
-                            "source_path": h.meta.get("source_path", ""),
+                            "source_path": h.source_path,
                         }
                     )
 
@@ -95,6 +140,7 @@ class RAGPipeline:
             "answer": answer_text,
             "confidence": float(decision.confidence),
             "sources": sources,
+            "citations": citations,
             "meta": {
                 "top_score": float(decision.top_score),
                 "retrieved_k": len(hits),

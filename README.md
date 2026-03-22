@@ -260,10 +260,28 @@ curl -X POST http://localhost:8000/query \
 
 ```bash
 # Build image
-docker build -t knowledge-assistant .
+docker build -t enterprise-knowledge-assistant:latest .
 
-# Run container
-docker run -e OPENAI_API_KEY=sk-... -p 8000:8000 knowledge-assistant
+# Run container (required env var)
+docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... enterprise-knowledge-assistant:latest
+
+# Optional: persist query logs to host
+docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... -v ${PWD}/logs:/app/logs enterprise-knowledge-assistant:latest
+
+# Health check
+curl http://localhost:8000/health
+
+# Stats check
+curl http://localhost:8000/stats
+```
+
+Required environment variables:
+- OPENAI_API_KEY: OpenAI API key used by the generator.
+
+Optional local compose run:
+```bash
+# Uses docker-compose.yml (expects OPENAI_API_KEY in shell/.env)
+docker compose up --build
 ```
 
 ---
@@ -491,15 +509,12 @@ python scripts/validate_chunks.py
 python scripts/validate_index.py
 ```
 
+
 ---
 
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file
-
-
-
----
 
 
 
