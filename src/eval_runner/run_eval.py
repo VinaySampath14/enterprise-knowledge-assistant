@@ -62,7 +62,7 @@ def main() -> None:
 
         # Re-run retrieval+gate to access used_chunks for groundedness
         hits = pipeline.retriever.retrieve(query)
-        decision = pipeline.gate.decide(hits)
+        decision = pipeline.gate.decide(hits, query=query)
 
         grounded = compute_groundedness(
             out["answer"],

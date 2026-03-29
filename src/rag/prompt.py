@@ -10,19 +10,29 @@ def format_retrieved_chunks(chunks: List[RetrievedChunk]) -> Tuple[str, List[Dic
     source_map: List[Dict[str, Any]] = []
 
     for i, c in enumerate(chunks, start=1):
-        heading_text = c.heading if c.heading is not None else "None"
-        source_text = c.source_path if c.source_path is not None else "None"
+        module = getattr(c, "module", "unknown")
+        source_path = getattr(c, "source_path", None)
+        heading = getattr(c, "heading", None)
+        chunk_id = getattr(c, "chunk_id", f"chunk_{i}")
+        text = getattr(c, "text", "")
+        doc_id = getattr(c, "doc_id", None)
+        start_char = getattr(c, "start_char", None)
+        end_char = getattr(c, "end_char", None)
+        score = float(getattr(c, "score", 0.0))
+
+        heading_text = heading if heading is not None else "None"
+        source_text = source_path if source_path is not None else "None"
 
         context_blocks.append(
             "\n".join(
                 [
                     f"[{i}]",
-                    f"Module: {c.module}",
+                    f"Module: {module}",
                     f"Source: {source_text}",
                     f"Heading: {heading_text}",
-                    f"Chunk ID: {c.chunk_id}",
+                    f"Chunk ID: {chunk_id}",
                     "Text:",
-                    c.text,
+                    text,
                 ]
             )
         )
@@ -30,14 +40,14 @@ def format_retrieved_chunks(chunks: List[RetrievedChunk]) -> Tuple[str, List[Dic
         source_map.append(
             {
                 "id": i,
-                "chunk_id": c.chunk_id,
-                "doc_id": c.doc_id,
-                "module": c.module,
-                "source_path": c.source_path,
-                "heading": c.heading,
-                "start_char": c.start_char,
-                "end_char": c.end_char,
-                "score": float(c.score),
+                "chunk_id": chunk_id,
+                "doc_id": doc_id,
+                "module": module,
+                "source_path": source_path,
+                "heading": heading,
+                "start_char": start_char,
+                "end_char": end_char,
+                "score": score,
             }
         )
 

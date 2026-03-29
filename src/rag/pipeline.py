@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import time
 import uuid
+from collections import Counter
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -63,6 +64,110 @@ def _build_citations_from_ids(
     return [by_id[cid] for cid in citation_ids if cid in by_id]
 
 
+def _is_usable_answer_text(answer_text: str) -> bool:
+    t = (answer_text or "").strip()
+    if len(t) < 40:
+        return False
+    if re.search(r"[a-zA-Z]", t) is None:
+        return False
+    low = t.lower()
+    # If the entire message is a boilerplate refusal, keep existing override behavior.
+    boilerplate = {
+        "i don't have enough information in the python standard library documentation to answer that.",
+        "i do not have enough information in the python standard library documentation to answer that.",
+        "i don't have enough information from the provided documentation.",
+        "i do not have enough information from the provided documentation.",
+    }
+    if low in boilerplate:
+        return False
+    if low.startswith("i don't have enough information") or low.startswith("i do not have enough information"):
+        return False
+    return True
+
+
+def _is_strong_stdlib_coherence(chunks: List[Any]) -> bool:
+    if not chunks:
+        return False
+    top = chunks[:3]
+    modules = [c.module for c in top if getattr(c, "module", None)]
+    if not modules:
+        return False
+
+    counts = Counter(modules)
+    same_module = len(counts) == 1
+    concentrated = counts.most_common(1)[0][1] >= 2
+
+    stdlib_paths = 0
+    for c in top:
+        src = (getattr(c, "source_path", "") or "").lower().replace("\\", "/")
+        if "python_stdlib/" in src:
+            stdlib_paths += 1
+
+    return same_module or (concentrated and stdlib_paths >= 2)
+
+
+def _has_grounded_stdlib_signal(
+    answer_text: str,
+    chunks: List[Any],
+    citation_ids: List[int],
+) -> bool:
+    # Safety-first: require explicit citation linkage for override blocking.
+    return bool(citation_ids)
+
+
+def _should_block_post_generation_refusal_override(
+    *,
+    query: str,
+    answer_text: str,
+    gate_decision: str,
+    mismatch_subtype: str,
+    used_chunks: List[Any],
+    citation_ids: List[int],
+    gate: ConfidenceGate,
+) -> tuple[bool, List[str]]:
+    reasons: List[str] = []
+
+    if gate_decision != "answer":
+        return False, reasons
+    if mismatch_subtype in {"hard", "recoverable"}:
+        return False, reasons
+    if not _is_usable_answer_text(answer_text):
+        return False, reasons
+    if not _is_strong_stdlib_coherence(used_chunks):
+        return False, reasons
+    if not _has_grounded_stdlib_signal(answer_text, used_chunks, citation_ids):
+        return False, reasons
+
+    module_hints = gate._extract_module_hints(query)  # noqa: SLF001
+    use_target = gate._extract_use_target(query)  # noqa: SLF001
+    has_plausible_anchor = gate._has_plausible_stdlib_anchor(  # noqa: SLF001
+        query,
+        used_chunks,
+        module_hints=module_hints,
+        use_target=use_target,
+    )
+    if not has_plausible_anchor:
+        return False, reasons
+
+    if gate._explicit_out_of_domain_signals(query):  # noqa: SLF001
+        return False, reasons
+
+    if gate._python_general_concept_signals(query):  # noqa: SLF001
+        return False, reasons
+
+    if gate._python_general_out_of_scope_signals(query):  # noqa: SLF001
+        return False, reasons
+
+    reasons.append("code: PHASE2_POSTGEN_NARROW_RESCUE_KEEP_ANSWER")
+    reasons.append("guard: gate_decision=answer")
+    reasons.append("guard: mismatch not hard/recoverable")
+    reasons.append("guard: strong stdlib coherence")
+    reasons.append("guard: grounded evidence/citation signal present")
+    reasons.append("guard: plausible in-domain stdlib/module/function anchor")
+    reasons.append("guard: no python-general out-of-scope intent signal")
+    return True, reasons
+
+
 class RAGPipeline:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
@@ -80,7 +185,7 @@ class RAGPipeline:
         hits = self.retriever.retrieve(query)
         t_retrieval_end = time.perf_counter()
 
-        decision = self.gate.decide(hits)
+        decision = self.gate.decide(hits, query=query)
 
         sources: List[Dict[str, Any]] = []
         citations: List[Dict[str, Any]] = []
@@ -108,19 +213,56 @@ class RAGPipeline:
             answer_text = self.generator.generate(query, decision.used_chunks)
             t_gen_end = time.perf_counter()
 
+            source_mapping: List[Dict[str, Any]] = []
+            citation_ids: List[int] = []
+            parsed_citations: List[Dict[str, Any]] = []
+            try:
+                _, source_mapping = format_retrieved_chunks(decision.used_chunks)
+                citation_ids = _extract_citation_ids(answer_text)
+                parsed_citations = _build_citations_from_ids(citation_ids, source_mapping)
+            except Exception:
+                source_mapping = []
+                citation_ids = []
+                parsed_citations = []
+
+            override_triggered = _is_refusal_text(answer_text)
+            override_blocked = False
+            override_block_reasons: List[str] = []
+
             # 🔒 Post-generation refusal override
-            if _is_refusal_text(answer_text):
-                result_type = "refuse"
-                sources = []
-                citations = []
+            if override_triggered:
+                mismatch_subtype, _ = self.gate._classify_mismatch(query, decision.used_chunks)  # noqa: SLF001
+
+                override_blocked, override_block_reasons = _should_block_post_generation_refusal_override(
+                    query=query,
+                    answer_text=answer_text,
+                    gate_decision=decision.decision,
+                    mismatch_subtype=mismatch_subtype,
+                    used_chunks=decision.used_chunks,
+                    citation_ids=citation_ids,
+                    gate=self.gate,
+                )
+
+                if override_blocked:
+                    result_type = "answer"
+                    citations = parsed_citations
+                    for h in decision.used_chunks:
+                        sources.append(
+                            {
+                                "chunk_id": h.chunk_id,
+                                "doc_id": h.doc_id,
+                                "module": h.module,
+                                "score": float(h.score),
+                                "source_path": h.source_path,
+                            }
+                        )
+                else:
+                    result_type = "refuse"
+                    sources = []
+                    citations = []
             else:
                 result_type = "answer"
-                try:
-                    _, source_mapping = format_retrieved_chunks(decision.used_chunks)
-                    citation_ids = _extract_citation_ids(answer_text)
-                    citations = _build_citations_from_ids(citation_ids, source_mapping)
-                except Exception:
-                    citations = []
+                citations = parsed_citations
 
                 for h in decision.used_chunks:
                     sources.append(
@@ -143,6 +285,33 @@ class RAGPipeline:
             "citations": citations,
             "meta": {
                 "top_score": float(decision.top_score),
+                "second_score": float(decision.second_score),
+                "score_margin": float(decision.margin),
+                "gate_decision": decision.decision,
+                "gate_rationale": decision.rationale,
+                "gate_tie_breaker_fired": (
+                    "PHASE1B_INTENT_TIEBREAKER_REFUSE" in (decision.rationale or "")
+                ),
+                "postgen_refusal_override_triggered": (
+                    bool(override_triggered)
+                    if decision.decision == "answer"
+                    else False
+                ),
+                "postgen_refusal_override_blocked": (
+                    bool(override_blocked)
+                    if decision.decision == "answer"
+                    else False
+                ),
+                "postgen_refusal_override_block_reasons": (
+                    override_block_reasons
+                    if decision.decision == "answer"
+                    else []
+                ),
+                "postgen_refusal_override_rescue_code": (
+                    "PHASE2_POSTGEN_NARROW_RESCUE_KEEP_ANSWER"
+                    if decision.decision == "answer" and bool(override_blocked)
+                    else ""
+                ),
                 "retrieved_k": len(hits),
                 "latency_ms_total": (t1 - t0) * 1000,
                 "latency_ms_retrieval": (t_retrieval_end - t_retrieval_start) * 1000,
