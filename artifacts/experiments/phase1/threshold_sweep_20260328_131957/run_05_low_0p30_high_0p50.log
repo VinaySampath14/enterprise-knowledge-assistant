@@ -1,0 +1,30 @@
+# Command
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_phase_gate.py --dataset eval_v2/synthetic_scaffold_dataset_refined.jsonl --category-field refined_category --expected-type-field expected_type_refined --phase-dir artifacts/experiments/phase0
+
+# STDOUT
+
+=== Candidate Run ===
+[OK] Phase 0 bundle written: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V2_phase0_20260328_132352_candidate
+[OK] GO/NO-GO decision: GO
+
+exit_code=0
+
+=== Comparison Run ===
+[OK] Wrote comparison JSON: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V2_phase0_20260328_132352_candidate\comparison_vs_V1_phase0_20260328_130137_baseline\comparison.json
+[OK] Wrote comparison report: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V2_phase0_20260328_132352_candidate\comparison_vs_V1_phase0_20260328_130137_baseline\report.md
+
+exit_code=0
+
+=== Final Phase Gate Summary ===
+baseline_run: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V1_phase0_20260328_130137_baseline
+candidate_run: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V2_phase0_20260328_132352_candidate
+comparison_json: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\V2_phase0_20260328_132352_candidate\comparison_vs_V1_phase0_20260328_130137_baseline\comparison.json
+guardrail_overall_passed: True
+promotion_recommendation: GO
+promoted_baseline_file: C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\artifacts\experiments\phase0\promoted_baseline.json
+
+
+# STDERR
+
+
+# exit_code=0

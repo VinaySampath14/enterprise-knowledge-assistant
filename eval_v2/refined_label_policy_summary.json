@@ -1,0 +1,83 @@
+{
+  "policy": {
+    "near_domain_should_refuse": "Queries close to domain but not answerable from corpus context, including wrong-module/wrong-library/concept mismatches.",
+    "recoverable_should_clarify": "Queries likely recoverable via clarification, such as typos or ambiguous phrasing that may map to in-corpus intent."
+  },
+  "artifacts": {
+    "eval_v2_refined_dataset": "C:\\Users\\Vinay\\OneDrive\\Desktop\\enterprise-knowledge-assistant\\eval_v2\\synthetic_scaffold_dataset_refined.jsonl",
+    "diagnostic_refined_dataset": null
+  },
+  "counts_per_refined_category": {
+    "in_domain_answerable": 8,
+    "near_domain_should_refuse": 7,
+    "out_of_domain_unanswerable": 7
+  },
+  "expected_type_distribution_per_refined_category": {
+    "in_domain_answerable": {
+      "answer": 8
+    },
+    "near_domain_should_refuse": {
+      "refuse": 7
+    },
+    "out_of_domain_unanswerable": {
+      "refuse": 7
+    }
+  },
+  "source_breakdown": {
+    "eval_v2": {
+      "counts_per_refined_category": {
+        "in_domain_answerable": 8,
+        "near_domain_should_refuse": 7,
+        "out_of_domain_unanswerable": 7
+      },
+      "expected_type_distribution_per_refined_category": {
+        "in_domain_answerable": {
+          "answer": 8
+        },
+        "near_domain_should_refuse": {
+          "refuse": 7
+        },
+        "out_of_domain_unanswerable": {
+          "refuse": 7
+        }
+      }
+    },
+    "diagnostic": {
+      "counts_per_refined_category": {},
+      "expected_type_distribution_per_refined_category": {}
+    }
+  },
+  "examples": {
+    "near_domain_should_refuse": [
+      {
+        "id": "synv2-0009",
+        "query": "In argparse, how do I use copyfileobj exactly as documented in argparse?",
+        "original_category": "adversarial_near_domain",
+        "refined_category": "near_domain_should_refuse",
+        "original_expected_type": "clarify",
+        "expected_type_refined": "refuse"
+      },
+      {
+        "id": "synv2-0010",
+        "query": "Can you show TemporaryFile usage for asyncio as if it belonged there?",
+        "original_category": "adversarial_near_domain",
+        "refined_category": "near_domain_should_refuse",
+        "original_expected_type": "clarify",
+        "expected_type_refined": "refuse"
+      },
+      {
+        "id": "synv2-0011",
+        "query": "Where is fill documented inside bisect?",
+        "original_category": "adversarial_near_domain",
+        "refined_category": "near_domain_should_refuse",
+        "original_expected_type": "clarify",
+        "expected_type_refined": "refuse"
+      }
+    ],
+    "recoverable_should_clarify": []
+  },
+  "notes": [
+    "Original benchmark artifacts are preserved; refined versions were written separately.",
+    "This step updates evaluation labels/reporting only; no core RAG behavior changes."
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "total_queries": 20,
+  "overall_accuracy": 0.7,
+  "predicted_type_counts": {
+    "answer": 3,
+    "refuse": 12,
+    "clarify": 5
+  },
+  "category_summary": {
+    "in_domain_answerable": {
+      "count": 4,
+      "accuracy": 0.75,
+      "predicted_type_counts": {
+        "answer": 3,
+        "refuse": 1
+      },
+      "avg_top_score": 0.5662013068795204,
+      "avg_citations_count": 2.0
+    },
+    "near_domain_should_refuse": {
+      "count": 4,
+      "accuracy": 0.75,
+      "predicted_type_counts": {
+        "refuse": 3,
+        "clarify": 1
+      },
+      "avg_top_score": 0.5553356111049652,
+      "avg_citations_count": 0.0
+    },
+    "out_of_domain_unanswerable": {
+      "count": 4,
+      "accuracy": 0.75,
+      "predicted_type_counts": {
+        "clarify": 1,
+        "refuse": 3
+      },
+      "avg_top_score": 0.1696600466966629,
+      "avg_citations_count": 0.0
+    },
+    "python_general_out_of_scope": {
+      "count": 4,
+      "accuracy": 0.75,
+      "predicted_type_counts": {
+        "clarify": 1,
+        "refuse": 3
+      },
+      "avg_top_score": 0.3418784812092781,
+      "avg_citations_count": 0.0
+    },
+    "recoverable_should_clarify": {
+      "count": 4,
+      "accuracy": 0.5,
+      "predicted_type_counts": {
+        "clarify": 2,
+        "refuse": 2
+      },
+      "avg_top_score": 0.5387332290410995,
+      "avg_citations_count": 0.0
+    }
+  },
+  "confusion_summary": {
+    "expected_answer_predicted_refuse": 1,
+    "expected_answer_predicted_clarify": 0,
+    "expected_refuse_predicted_answer": 0,
+    "expected_refuse_predicted_clarify": 3,
+    "expected_clarify_predicted_answer": 0,
+    "expected_clarify_predicted_refuse": 2
+  },
+  "worst_mismatches": [
+    {
+      "id": "hld-006",
+      "category": "near_domain_should_refuse",
+      "query": "Is pathlib the module to parse CSV rows directly?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.5786978006362915,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    },
+    {
+      "id": "hld-003",
+      "category": "in_domain_answerable",
+      "query": "What practical job does itertools.chain solve?",
+      "expected_type": "answer",
+      "predicted_type": "refuse",
+      "top_score": 0.549956202507019,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "hld-014",
+      "category": "recoverable_should_clarify",
+      "query": "What stdlib module should I use for handling date and time values?",
+      "expected_type": "clarify",
+      "predicted_type": "refuse",
+      "top_score": 0.5329962372779846,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "hld-015",
+      "category": "recoverable_should_clarify",
+      "query": "Best stdlib way to handle concurrency overall?",
+      "expected_type": "clarify",
+      "predicted_type": "refuse",
+      "top_score": 0.5309593677520752,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "hld-009",
+      "category": "python_general_out_of_scope",
+      "query": "How do I install pandas in my environment?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.3442164957523346,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    }
+  ],
+  "notes": [
+    "Evaluation-only run over eval_v2 synthetic scaffold.",
+    "No retrieval/generation/confidence logic changes were applied by this script.",
+    "Category field: category",
+    "Expected type field: expected_type"
+  ]
+}

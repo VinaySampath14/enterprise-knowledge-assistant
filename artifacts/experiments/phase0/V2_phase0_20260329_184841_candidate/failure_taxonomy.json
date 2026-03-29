@@ -1,0 +1,53 @@
+{
+  "total_mismatches": 5,
+  "mismatch_transitions": {
+    "refuse_to_clarify": 5
+  },
+  "mismatches_by_category": {
+    "near_domain_should_refuse": 5
+  },
+  "representative_examples_by_category": {
+    "near_domain_should_refuse": [
+      {
+        "id": "synv2-0010",
+        "query": "In argparse, how do I use glob exactly as documented in argparse?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6712791919708252,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      },
+      {
+        "id": "synv2-0014",
+        "query": "In asyncio, how do I use abspath exactly as documented in asyncio?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6604260206222534,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      },
+      {
+        "id": "synv2-0015",
+        "query": "In asyncio, how do I use commonpath exactly as documented in asyncio?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6591809391975403,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      },
+      {
+        "id": "synv2-0009",
+        "query": "In argparse, how do I use reader exactly as documented in argparse?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6481755971908569,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      },
+      {
+        "id": "synv2-0013",
+        "query": "In argparse, how do I use abspath exactly as documented in argparse?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6009640097618103,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      }
+    ]
+  }
+}

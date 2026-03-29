@@ -1,0 +1,13 @@
+{
+  "generated_utc": "2026-03-28T14:59:38.020437+00:00",
+  "run_id": "phase1b_diagnostics_synthetic_candidate",
+  "predictions_path": "C:\\Users\\Vinay\\OneDrive\\Desktop\\enterprise-knowledge-assistant\\artifacts\\experiments\\phase0\\V2_phase0_20260328_145618_candidate\\predictions.jsonl",
+  "total_predictions": 22,
+  "total_failures": 0,
+  "failure_rate": 0.0,
+  "bucket_ranking": [],
+  "recommended_next_patch": {
+    "recommended_intervention": "No intervention needed.",
+    "rationale": "No failures remain in the selected predictions set."
+  }
+}

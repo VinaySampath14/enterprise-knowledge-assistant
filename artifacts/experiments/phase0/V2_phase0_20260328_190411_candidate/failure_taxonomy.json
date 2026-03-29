@@ -1,0 +1,62 @@
+{
+  "total_mismatches": 5,
+  "mismatch_transitions": {
+    "answer_to_refuse": 2,
+    "clarify_to_answer": 1,
+    "clarify_to_refuse": 1,
+    "refuse_to_clarify": 1
+  },
+  "mismatches_by_category": {
+    "in_domain_answerable": 2,
+    "near_domain_should_refuse": 1,
+    "recoverable_should_clarify": 2
+  },
+  "representative_examples_by_category": {
+    "in_domain_answerable": [
+      {
+        "id": "man-009",
+        "query": "explain how asyncio event loop works",
+        "expected_type": "answer",
+        "predicted_type": "refuse",
+        "top_score": 0.6513165235519409,
+        "answer_preview": "I don't have enough information from the provided documentation."
+      },
+      {
+        "id": "man-007",
+        "query": "what can itertools.chain be used for?",
+        "expected_type": "answer",
+        "predicted_type": "refuse",
+        "top_score": 0.5848299264907837,
+        "answer_preview": "I don't have enough information from the provided documentation."
+      }
+    ],
+    "near_domain_should_refuse": [
+      {
+        "id": "man-012",
+        "query": "can I use asyncio to parse command line arguments?",
+        "expected_type": "refuse",
+        "predicted_type": "clarify",
+        "top_score": 0.6447266936302185,
+        "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+      }
+    ],
+    "recoverable_should_clarify": [
+      {
+        "id": "man-027",
+        "query": "how do I cache results in Python?",
+        "expected_type": "clarify",
+        "predicted_type": "answer",
+        "top_score": 0.643462061882019,
+        "answer_preview": "To cache results in Python, you can use a Least Recently Used (LRU) cache implementation. One way to do this is by using the `functools.lru_cache` decorator, which caches the resul"
+      },
+      {
+        "id": "man-024",
+        "query": "how do I do async file operations in Python?",
+        "expected_type": "clarify",
+        "predicted_type": "refuse",
+        "top_score": 0.615492582321167,
+        "answer_preview": "I don't have enough information from the provided documentation."
+      }
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "total_queries": 33,
+  "overall_accuracy": 0.696969696969697,
+  "predicted_type_counts": {
+    "answer": 9,
+    "refuse": 17,
+    "clarify": 7
+  },
+  "category_summary": {
+    "in_domain_answerable": {
+      "count": 10,
+      "accuracy": 0.8,
+      "predicted_type_counts": {
+        "answer": 8,
+        "refuse": 2
+      },
+      "avg_top_score": 0.6474716663360596,
+      "avg_citations_count": 2.1
+    },
+    "near_domain_should_refuse": {
+      "count": 7,
+      "accuracy": 0.8571428571428571,
+      "predicted_type_counts": {
+        "refuse": 6,
+        "clarify": 1
+      },
+      "avg_top_score": 0.5538991093635559,
+      "avg_citations_count": 0.0
+    },
+    "out_of_domain_unanswerable": {
+      "count": 5,
+      "accuracy": 0.6,
+      "predicted_type_counts": {
+        "clarify": 2,
+        "refuse": 3
+      },
+      "avg_top_score": 0.1757396340370178,
+      "avg_citations_count": 0.0
+    },
+    "python_general_out_of_scope": {
+      "count": 6,
+      "accuracy": 0.6666666666666666,
+      "predicted_type_counts": {
+        "clarify": 2,
+        "refuse": 4
+      },
+      "avg_top_score": 0.29689666132132214,
+      "avg_citations_count": 0.0
+    },
+    "recoverable_should_clarify": {
+      "count": 5,
+      "accuracy": 0.4,
+      "predicted_type_counts": {
+        "refuse": 2,
+        "answer": 1,
+        "clarify": 2
+      },
+      "avg_top_score": 0.41647984385490416,
+      "avg_citations_count": 0.6
+    }
+  },
+  "confusion_summary": {
+    "expected_answer_predicted_refuse": 2,
+    "expected_answer_predicted_clarify": 0,
+    "expected_refuse_predicted_answer": 0,
+    "expected_refuse_predicted_clarify": 5,
+    "expected_clarify_predicted_answer": 1,
+    "expected_clarify_predicted_refuse": 2
+  },
+  "worst_mismatches": [
+    {
+      "id": "man-009",
+      "category": "in_domain_answerable",
+      "query": "explain how asyncio event loop works",
+      "expected_type": "answer",
+      "predicted_type": "refuse",
+      "top_score": 0.6513165235519409,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "man-012",
+      "category": "near_domain_should_refuse",
+      "query": "can I use asyncio to parse command line arguments?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.6447266936302185,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    },
+    {
+      "id": "man-024",
+      "category": "recoverable_should_clarify",
+      "query": "how do I do async file operations in Python?",
+      "expected_type": "clarify",
+      "predicted_type": "refuse",
+      "top_score": 0.615492582321167,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "man-007",
+      "category": "in_domain_answerable",
+      "query": "what can itertools.chain be used for?",
+      "expected_type": "answer",
+      "predicted_type": "refuse",
+      "top_score": 0.5848299264907837,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "man-025",
+      "category": "recoverable_should_clarify",
+      "query": "what is the best way to handle concurrency in Python stdlib?",
+      "expected_type": "clarify",
+      "predicted_type": "answer",
+      "top_score": 0.5728256702423096,
+      "citations_count": 3,
+      "answer_preview": "The best way to handle concurrency in Python's standard library is to use the `concurrent.futures` module, which provides a high-level interface for executing tasks asynchronously "
+    }
+  ],
+  "notes": [
+    "Evaluation-only run over eval_v2 synthetic scaffold.",
+    "No retrieval/generation/confidence logic changes were applied by this script.",
+    "Category field: category",
+    "Expected type field: expected_type"
+  ]
+}

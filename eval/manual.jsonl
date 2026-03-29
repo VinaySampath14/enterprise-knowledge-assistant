@@ -1,0 +1,39 @@
+{"id": "man-001", "category": "in_domain_answerable", "query": "what is the difference between threading and multiprocessing in Python?", "expected_type": "answer", "difficulty": "medium"}
+{"id": "man-002", "category": "in_domain_answerable", "query": "how does the logging module handle log levels?", "expected_type": "answer", "difficulty": "easy"}
+{"id": "man-003", "category": "in_domain_answerable", "query": "give me an overview of what collections.defaultdict does", "expected_type": "answer", "difficulty": "easy"}
+{"id": "man-004", "category": "in_domain_answerable", "query": "how do I match patterns in strings using the re module?", "expected_type": "answer", "difficulty": "easy"}
+{"id": "man-005", "category": "in_domain_answerable", "query": "what are the main features of pathlib compared to os.path?", "expected_type": "answer", "difficulty": "medium"}
+{"id": "man-006", "category": "in_domain_answerable", "query": "how does heapq maintain sort order?", "expected_type": "answer", "difficulty": "medium"}
+{"id": "man-007", "category": "in_domain_answerable", "query": "what can itertools.chain be used for?", "expected_type": "answer", "difficulty": "easy"}
+{"id": "man-008", "category": "in_domain_answerable", "query": "how do I compress data with the Python standard library?", "expected_type": "answer", "difficulty": "medium"}
+{"id": "man-009", "category": "in_domain_answerable", "query": "explain how asyncio event loop works", "expected_type": "answer", "difficulty": "hard"}
+{"id": "man-010", "category": "in_domain_answerable", "query": "how do I serialize a Python object to a file?", "expected_type": "answer", "difficulty": "easy"}
+
+{"id": "man-011", "category": "near_domain_should_refuse", "query": "does argparse support wildcard file matching?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-012", "category": "near_domain_should_refuse", "query": "can I use asyncio to parse command line arguments?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-013", "category": "near_domain_should_refuse", "query": "how does threading handle JSON serialization?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-014", "category": "near_domain_should_refuse", "query": "does pathlib have built-in CSV reading support?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-015", "category": "near_domain_should_refuse", "query": "can heapq be used for HTTP requests?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-016", "category": "near_domain_should_refuse", "query": "how do I run SQL queries using the logging module?", "expected_type": "refuse", "difficulty": "hard"}
+{"id": "man-017", "category": "near_domain_should_refuse", "query": "does itertools support regex pattern matching?", "expected_type": "refuse", "difficulty": "hard"}
+
+
+{"id": "man-018", "category": "python_general_out_of_scope", "query": "how do I install numpy?", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-019", "category": "python_general_out_of_scope", "query": "what is the difference between a list and a tuple in Python?", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-020", "category": "python_general_out_of_scope", "query": "how does Python garbage collection work?", "expected_type": "refuse", "difficulty": "medium"}
+{"id": "man-021", "category": "python_general_out_of_scope", "query": "what does the GIL mean for multithreaded Python code?", "expected_type": "refuse", "difficulty": "medium"}
+{"id": "man-022", "category": "python_general_out_of_scope", "query": "how do I use pandas to filter a dataframe?", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-023", "category": "python_general_out_of_scope", "query": "what is a Python decorator and how do I write one?", "expected_type": "refuse", "difficulty": "medium"}
+
+
+{"id": "man-024", "category": "recoverable_should_clarify", "query": "how do I do async file operations in Python?", "expected_type": "clarify", "difficulty": "medium"}
+{"id": "man-025", "category": "recoverable_should_clarify", "query": "what is the best way to handle concurrency in Python stdlib?", "expected_type": "clarify", "difficulty": "medium"}
+{"id": "man-026", "category": "recoverable_should_clarify", "query": "how do I schedule something to run every 5 minutes?", "expected_type": "clarify", "difficulty": "medium"}
+{"id": "man-027", "category": "recoverable_should_clarify", "query": "how do I cache results in Python?", "expected_type": "clarify", "difficulty": "medium"}
+{"id": "man-028", "category": "recoverable_should_clarify", "query": "what module should I use for date and time in Python stdlib?", "expected_type": "clarify", "difficulty": "hard"}
+
+{"id": "man-029", "category": "out_of_domain_unanswerable", "query": "how do I center a div in CSS?", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-030", "category": "out_of_domain_unanswerable", "query": "explain gradient descent in machine learning", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-031", "category": "out_of_domain_unanswerable", "query": "best coffee shops in Weimar", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-032", "category": "out_of_domain_unanswerable", "query": "what is the plot of Dune?", "expected_type": "refuse", "difficulty": "easy"}
+{"id": "man-033", "category": "out_of_domain_unanswerable", "query": "how do transformer models work?", "expected_type": "refuse", "difficulty": "easy"}

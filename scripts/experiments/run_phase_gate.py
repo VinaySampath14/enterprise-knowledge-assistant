@@ -10,6 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Ensure repo root is on sys.path when this file is executed directly.
+repo_root = Path(__file__).resolve().parents[2]
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
+from src.monitoring.mlflow_tracking import log_phase_gate_tracking, resolve_tracking_uri
+
 
 def _run_cmd(cmd: List[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -162,6 +169,19 @@ def _find_usable_promoted_baseline(
     return None
 
 
+def _resolve_comparator_script(root: Path) -> Path:
+    candidates = [
+        root / "scripts" / "experiments" / "compare_ablation_runs.py",
+        root / "scripts" / "experiments" / "archive" / "2026-03-29" / "compare_ablation_runs.py",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    raise FileNotFoundError(
+        "compare_ablation_runs.py not found in expected locations under scripts/experiments"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -225,6 +245,21 @@ def main() -> None:
         type=float,
         default=0.95,
         help="Reproducibility threshold passed to phase0 runner.",
+    )
+    parser.add_argument(
+        "--mlflow-experiment",
+        default="eka-phase-gate",
+        help="MLflow experiment name for phase-gate tracking.",
+    )
+    parser.add_argument(
+        "--disable-mlflow",
+        action="store_true",
+        help="Disable MLflow tracking for this run.",
+    )
+    parser.add_argument(
+        "--ablation-version",
+        default="",
+        help="Optional version label (e.g., H0_clean_gate, v3_intent_clf) for MLflow grouping.",
     )
     args = parser.parse_args()
 
@@ -302,6 +337,32 @@ def main() -> None:
             print(f"baseline_run: {baseline_run_dir}")
             print("candidate_run: skipped (rebaseline only)")
             print("promotion_recommendation: GO (new baseline promoted)")
+            if not args.disable_mlflow:
+                tracked = log_phase_gate_tracking(
+                    repo_root=root,
+                    experiment_name=args.mlflow_experiment,
+                    run_name=f"phase_gate::{Path(args.dataset).name}",
+                    params={
+                        "dataset": args.dataset,
+                        "category_field": args.category_field,
+                        "expected_type_field": args.expected_type_field,
+                        "phase_dir": args.phase_dir,
+                        "repro_threshold": args.repro_threshold,
+                    },
+                    tags={
+                        "run_type": "phase_gate",
+                        "promotion_recommendation": "GO",
+                        "candidate_status": "skipped_rebaseline_only",
+                        "tracking_uri": resolve_tracking_uri(root),
+                        "ablation_version": args.ablation_version,
+                    },
+                    comparison_json=None,
+                    comparison_report=None,
+                    guardrails={"overall_passed": True},
+                    core_deltas={},
+                )
+                if tracked:
+                    print(f"[OK] MLflow tracked: {tracked}")
             return
 
     if baseline_run_dir is None:
@@ -349,6 +410,32 @@ def main() -> None:
                 print(f"baseline_run: {baseline_run_dir}")
                 print("candidate_run: skipped (initial baseline creation)")
                 print("promotion_recommendation: GO (baseline established)")
+                if not args.disable_mlflow:
+                    tracked = log_phase_gate_tracking(
+                        repo_root=root,
+                        experiment_name=args.mlflow_experiment,
+                        run_name=f"phase_gate::{Path(args.dataset).name}",
+                        params={
+                            "dataset": args.dataset,
+                            "category_field": args.category_field,
+                            "expected_type_field": args.expected_type_field,
+                            "phase_dir": args.phase_dir,
+                            "repro_threshold": args.repro_threshold,
+                        },
+                        tags={
+                            "run_type": "phase_gate",
+                            "promotion_recommendation": "GO",
+                            "candidate_status": "skipped_initial_baseline_only",
+                            "tracking_uri": resolve_tracking_uri(root),
+                            "ablation_version": args.ablation_version,
+                        },
+                        comparison_json=None,
+                        comparison_report=None,
+                        guardrails={"overall_passed": True},
+                        core_deltas={},
+                    )
+                    if tracked:
+                        print(f"[OK] MLflow tracked: {tracked}")
                 return
 
     baseline_signature = _extract_signature_from_run(baseline_run_dir)
@@ -360,6 +447,32 @@ def main() -> None:
         print("candidate_run: skipped (no signature changes detected)")
         print(f"promoted_baseline_file: {promoted_file}")
         print("promotion_recommendation: NO-OP (reuse promoted baseline)")
+        if not args.disable_mlflow:
+            tracked = log_phase_gate_tracking(
+                repo_root=root,
+                experiment_name=args.mlflow_experiment,
+                run_name=f"phase_gate::{Path(args.dataset).name}",
+                params={
+                    "dataset": args.dataset,
+                    "category_field": args.category_field,
+                    "expected_type_field": args.expected_type_field,
+                    "phase_dir": args.phase_dir,
+                    "repro_threshold": args.repro_threshold,
+                },
+                tags={
+                    "run_type": "phase_gate",
+                    "promotion_recommendation": "NO-OP",
+                    "candidate_status": "skipped_no_signature_change",
+                    "tracking_uri": resolve_tracking_uri(root),
+                    "ablation_version": args.ablation_version,
+                },
+                comparison_json=None,
+                comparison_report=None,
+                guardrails={"overall_passed": True},
+                core_deltas={},
+            )
+            if tracked:
+                print(f"[OK] MLflow tracked: {tracked}")
         return
 
     candidate_run_id = f"V2_phase0_{ts}_candidate"
@@ -385,10 +498,11 @@ def main() -> None:
         raise RuntimeError("candidate run failed")
 
     candidate_run_dir = phase_dir / candidate_run_id
+    comparator_script = _resolve_comparator_script(root)
 
     compare_cmd = [
         sys.executable,
-        str(root / "scripts" / "experiments" / "compare_ablation_runs.py"),
+        str(comparator_script),
         "--baseline-run",
         str(baseline_run_dir),
         "--current-run",
@@ -421,6 +535,35 @@ def main() -> None:
     print(f"guardrail_overall_passed: {guardrails.get('overall_passed')}")
     print(f"promotion_recommendation: {decision}")
     print(f"promoted_baseline_file: {promoted_file}")
+
+    if not args.disable_mlflow:
+        tracked = log_phase_gate_tracking(
+            repo_root=root,
+            experiment_name=args.mlflow_experiment,
+            run_name=f"phase_gate::{Path(args.dataset).name}",
+            params={
+                "dataset": args.dataset,
+                "category_field": args.category_field,
+                "expected_type_field": args.expected_type_field,
+                "phase_dir": args.phase_dir,
+                "repro_threshold": args.repro_threshold,
+                "baseline_run_dir": str(baseline_run_dir),
+                "candidate_run_dir": str(candidate_run_dir),
+            },
+            tags={
+                "run_type": "phase_gate",
+                "promotion_recommendation": decision,
+                "guardrail_overall_passed": str(bool(guardrails.get("overall_passed"))),
+                "tracking_uri": resolve_tracking_uri(root),
+                "ablation_version": args.ablation_version,
+            },
+            comparison_json=comparison_json,
+            comparison_report=(comparison_json.parent / "report.md"),
+            guardrails=guardrails,
+            core_deltas=cmp_obj.get("core_deltas", {}),
+        )
+        if tracked:
+            print(f"[OK] MLflow tracked: {tracked}")
 
 
 if __name__ == "__main__":

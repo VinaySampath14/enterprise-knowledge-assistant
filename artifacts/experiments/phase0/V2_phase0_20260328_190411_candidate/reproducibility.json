@@ -1,0 +1,26 @@
+{
+  "comparable_count": 33,
+  "matched_count": 33,
+  "match_rate": 1.0,
+  "diff_count": 0,
+  "diff_samples": [],
+  "citation_count_drift_count": 2,
+  "citation_count_drift_samples": [
+    {
+      "id": "man-002",
+      "run_a": 1,
+      "run_b": 2,
+      "delta": 1
+    },
+    {
+      "id": "man-006",
+      "run_a": 4,
+      "run_b": 3,
+      "delta": -1
+    }
+  ],
+  "notes": [
+    "Match rate is computed from decision-stability fields: category, expected_type, predicted_type, and top_score tolerance.",
+    "Citation-count drift is tracked separately and does not affect reproducibility gate."
+  ]
+}

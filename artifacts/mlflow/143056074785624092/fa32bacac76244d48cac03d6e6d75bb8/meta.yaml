@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Vinay/OneDrive/Desktop/enterprise-knowledge-assistant/artifacts/mlflow/143056074785624092/fa32bacac76244d48cac03d6e6d75bb8/artifacts
+end_time: 1774815274856
+entry_point_name: ''
+experiment_id: '143056074785624092'
+lifecycle_stage: active
+run_id: fa32bacac76244d48cac03d6e6d75bb8
+run_name: eval::holdout_paraphrases.jsonl
+run_uuid: fa32bacac76244d48cac03d6e6d75bb8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1774815274386
+status: 3
+tags: []
+user_id: Vinay

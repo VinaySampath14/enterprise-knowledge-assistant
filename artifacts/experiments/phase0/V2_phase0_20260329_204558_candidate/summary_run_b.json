@@ -1,0 +1,75 @@
+{
+  "total_queries": 22,
+  "overall_accuracy": 0.9090909090909091,
+  "predicted_type_counts": {
+    "answer": 8,
+    "clarify": 2,
+    "refuse": 12
+  },
+  "category_summary": {
+    "in_domain_answerable": {
+      "count": 8,
+      "accuracy": 1.0,
+      "predicted_type_counts": {
+        "answer": 8
+      },
+      "avg_top_score": 0.6688313782215118,
+      "avg_citations_count": 3.0
+    },
+    "near_domain_should_refuse": {
+      "count": 7,
+      "accuracy": 0.7142857142857143,
+      "predicted_type_counts": {
+        "clarify": 2,
+        "refuse": 5
+      },
+      "avg_top_score": 0.4931855286870684,
+      "avg_citations_count": 0.0
+    },
+    "out_of_domain_unanswerable": {
+      "count": 7,
+      "accuracy": 1.0,
+      "predicted_type_counts": {
+        "refuse": 7
+      },
+      "avg_top_score": 0.16823474424225943,
+      "avg_citations_count": 0.0
+    }
+  },
+  "confusion_summary": {
+    "expected_answer_predicted_refuse": 0,
+    "expected_answer_predicted_clarify": 0,
+    "expected_refuse_predicted_answer": 0,
+    "expected_refuse_predicted_clarify": 2,
+    "expected_clarify_predicted_answer": 0,
+    "expected_clarify_predicted_refuse": 0
+  },
+  "worst_mismatches": [
+    {
+      "id": "synv2-0009",
+      "category": "near_domain_should_refuse",
+      "query": "In argparse, how do I use copyfileobj exactly as documented in argparse?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.5362516641616821,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    },
+    {
+      "id": "synv2-0011",
+      "category": "near_domain_should_refuse",
+      "query": "Where is fill documented inside bisect?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.29004454612731934,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    }
+  ],
+  "notes": [
+    "Evaluation-only run over eval_v2 synthetic scaffold.",
+    "No retrieval/generation/confidence logic changes were applied by this script.",
+    "Category field: refined_category",
+    "Expected type field: expected_type_refined"
+  ]
+}

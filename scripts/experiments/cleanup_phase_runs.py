@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+
+RUN_DIR_PATTERN = re.compile(r"^V\d+_phase\d+_\d{8}_\d{6}_(baseline|candidate)$")
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -20,37 +24,32 @@ def _kind(name: str) -> str:
     return "other"
 
 
+def _is_run_dir(path: Path) -> bool:
+    return path.is_dir() and RUN_DIR_PATTERN.match(path.name) is not None
+
+
 def _list_run_dirs(phase_dir: Path) -> List[Path]:
-    return sorted([p for p in phase_dir.iterdir() if p.is_dir()], key=lambda p: p.stat().st_mtime, reverse=True)
-
-
-def _promoted_baseline(phase_dir: Path) -> Optional[Path]:
-    pointer = phase_dir / "promoted_baseline.json"
-    if not pointer.exists():
-        return None
-    obj = _load_json(pointer)
-    p = obj.get("promoted_baseline_run_dir")
-    if not p:
-        return None
-    run_dir = Path(str(p))
-    return run_dir if run_dir.exists() else None
+    runs = [p for p in phase_dir.iterdir() if _is_run_dir(p)]
+    return sorted(runs, key=lambda p: p.stat().st_mtime, reverse=True)
 
 
 def _promoted_baselines_all(phase_dir: Path) -> List[Path]:
     pointers = list(phase_dir.glob("promoted_baseline*.json"))
     out: List[Path] = []
-    seen = set()
+    seen: set[Path] = set()
 
     for pointer in pointers:
         try:
             obj = _load_json(pointer)
         except Exception:
             continue
-        p = obj.get("promoted_baseline_run_dir")
-        if not p:
+
+        run_dir_raw = obj.get("promoted_baseline_run_dir")
+        if not run_dir_raw:
             continue
-        run_dir = Path(str(p))
-        if run_dir.exists() and run_dir not in seen:
+
+        run_dir = Path(str(run_dir_raw))
+        if run_dir.exists() and _is_run_dir(run_dir) and run_dir not in seen:
             seen.add(run_dir)
             out.append(run_dir)
 
@@ -62,27 +61,20 @@ def _plan_cleanup(
     keep_baselines: int,
     keep_candidates: int,
     keep_latest_any: int,
-) -> Tuple[List[Path], List[Path], List[Path]]:
+) -> Tuple[List[Path], List[Path]]:
     runs = _list_run_dirs(phase_dir)
-    promoted = _promoted_baseline(phase_dir)
     promoted_all = _promoted_baselines_all(phase_dir)
 
     baselines = [p for p in runs if _kind(p.name) == "baseline"]
     candidates = [p for p in runs if _kind(p.name) == "candidate"]
-    others = [p for p in runs if _kind(p.name) == "other"]
 
     keep: List[Path] = []
-
-    if promoted is not None:
-        keep.append(promoted)
     keep.extend(promoted_all)
-
     keep.extend(baselines[: max(0, keep_baselines)])
     keep.extend(candidates[: max(0, keep_candidates)])
     keep.extend(runs[: max(0, keep_latest_any)])
 
-    # de-dup while preserving order
-    seen = set()
+    seen: set[Path] = set()
     keep_unique: List[Path] = []
     for p in keep:
         if p in seen:
@@ -91,14 +83,15 @@ def _plan_cleanup(
         keep_unique.append(p)
 
     archive = [p for p in runs if p not in keep_unique]
-    return keep_unique, archive, others
+    return keep_unique, archive
 
 
 def _archive_runs(archive_runs: List[Path], archive_root: Path, dry_run: bool) -> Optional[Path]:
     if not archive_runs:
         return None
+
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    batch_dir = archive_root / f"phase0_cleanup_{stamp}"
+    batch_dir = archive_root / f"phase_cleanup_{stamp}"
 
     if dry_run:
         return batch_dir
@@ -111,7 +104,9 @@ def _archive_runs(archive_runs: List[Path], archive_root: Path, dry_run: bool) -
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Cleanup experiment run folders with archive-first retention policy")
+    parser = argparse.ArgumentParser(
+        description="Archive old phase run folders with promoted-baseline-safe retention"
+    )
     parser.add_argument(
         "--phase-dir",
         default="artifacts/experiments/phase0",
@@ -126,24 +121,24 @@ def main() -> None:
         "--keep-baselines",
         type=int,
         default=2,
-        help="How many most-recent baseline folders to keep",
+        help="How many most-recent baseline runs to keep",
     )
     parser.add_argument(
         "--keep-candidates",
         type=int,
-        default=2,
-        help="How many most-recent candidate folders to keep",
+        default=3,
+        help="How many most-recent candidate runs to keep",
     )
     parser.add_argument(
         "--keep-latest-any",
         type=int,
-        default=3,
-        help="Keep this many newest runs regardless of type",
+        default=4,
+        help="How many newest runs to keep regardless of type",
     )
     parser.add_argument(
         "--execute",
         action="store_true",
-        help="Actually archive runs. Without this flag, script prints a dry-run plan.",
+        help="Actually archive runs. Without this flag, a dry-run plan is printed.",
     )
     args = parser.parse_args()
 
@@ -154,28 +149,24 @@ def main() -> None:
     if not phase_dir.exists():
         raise FileNotFoundError(f"phase dir not found: {phase_dir}")
 
-    keep, archive, others = _plan_cleanup(
+    keep, archive = _plan_cleanup(
         phase_dir,
         keep_baselines=args.keep_baselines,
         keep_candidates=args.keep_candidates,
         keep_latest_any=args.keep_latest_any,
     )
 
-    promoted = _promoted_baseline(phase_dir)
-    promoted_all = _promoted_baselines_all(phase_dir)
     dry_run = not args.execute
     batch_dir = _archive_runs(archive, archive_root, dry_run=dry_run)
+    promoted_all = _promoted_baselines_all(phase_dir)
 
     print("=== Cleanup Plan ===")
     print(f"phase_dir: {phase_dir}")
-    print(f"promoted_baseline: {promoted}")
-    if promoted_all:
-        print(f"promoted_baselines_all: {[p.name for p in promoted_all]}")
     print(f"dry_run: {dry_run}")
+    if promoted_all:
+        print(f"promoted_runs_protected: {[p.name for p in promoted_all]}")
     print(f"keep_count: {len(keep)}")
     print(f"archive_count: {len(archive)}")
-    if others:
-        print(f"other_dirs_detected: {[p.name for p in others]}")
     if batch_dir is not None:
         print(f"archive_batch_dir: {batch_dir}")
 

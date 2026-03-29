@@ -1,0 +1,310 @@
+[
+  {
+    "query_id": "man-003",
+    "query": "give me an overview of what collections.defaultdict does",
+    "expected_type": "answer",
+    "predicted_type": "clarify",
+    "gate_decision": "clarify",
+    "top_score": 0.6117900609970093,
+    "second_score": 0.5840023756027222,
+    "score_margin": 0.02778768539428711,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "query uses broad/ambiguous phrasing",
+      "top score margin 0.028 < margin_min 0.030"
+    ],
+    "top_retrieved_modules": [
+      "collections"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity"
+    ],
+    "category": "in_domain_answerable",
+    "failure_bucket": "other repeated bucket (answer->clarify, ambiguity)"
+  },
+  {
+    "query_id": "man-007",
+    "query": "what can itertools.chain be used for?",
+    "expected_type": "answer",
+    "predicted_type": "refuse",
+    "gate_decision": "answer",
+    "top_score": 0.5848299264907837,
+    "second_score": 0.4894769787788391,
+    "score_margin": 0.09535294771194458,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules"
+    ],
+    "top_retrieved_modules": [
+      "itertools",
+      "collections"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity",
+      "post_generation_refusal_override"
+    ],
+    "category": "in_domain_answerable",
+    "failure_bucket": "conceptual in-domain false refusals"
+  },
+  {
+    "query_id": "man-009",
+    "query": "explain how asyncio event loop works",
+    "expected_type": "answer",
+    "predicted_type": "refuse",
+    "gate_decision": "answer",
+    "top_score": 0.6513165235519409,
+    "second_score": 0.6161812543869019,
+    "score_margin": 0.03513526916503906,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules"
+    ],
+    "top_retrieved_modules": [
+      "asyncio",
+      "sys"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity",
+      "post_generation_refusal_override"
+    ],
+    "category": "in_domain_answerable",
+    "failure_bucket": "conceptual in-domain false refusals"
+  },
+  {
+    "query_id": "man-012",
+    "query": "can I use asyncio to parse command line arguments?",
+    "expected_type": "refuse",
+    "predicted_type": "clarify",
+    "gate_decision": "clarify",
+    "top_score": 0.6447266936302185,
+    "second_score": 0.6095114946365356,
+    "score_margin": 0.03521519899368286,
+    "mismatch_status": "recoverable",
+    "mismatch_reasons": [
+      "requested symbol 'asyncio' appears only weakly; no callable/function-style evidence found"
+    ],
+    "ambiguity_flags": [],
+    "top_retrieved_modules": [
+      "asyncio"
+    ],
+    "decision_trigger_primary": "mismatch_recoverable",
+    "decision_trigger_path": [
+      "mismatch_recoverable"
+    ],
+    "category": "near_domain_should_refuse",
+    "failure_bucket": "clarify vs refuse confusion"
+  },
+  {
+    "query_id": "man-021",
+    "query": "what does the GIL mean for multithreaded Python code?",
+    "expected_type": "refuse",
+    "predicted_type": "answer",
+    "gate_decision": "answer",
+    "top_score": 0.6298938989639282,
+    "second_score": 0.6108826994895935,
+    "score_margin": 0.019011199474334717,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules",
+      "top score margin 0.019 < margin_min 0.030"
+    ],
+    "top_retrieved_modules": [
+      "threading",
+      "concurrent.futures"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity"
+    ],
+    "category": "python_general_out_of_scope",
+    "failure_bucket": "python-general leakage"
+  },
+  {
+    "query_id": "man-023",
+    "query": "what is a Python decorator and how do I write one?",
+    "expected_type": "refuse",
+    "predicted_type": "answer",
+    "gate_decision": "answer",
+    "top_score": 0.6483319401741028,
+    "second_score": 0.5820385217666626,
+    "score_margin": 0.06629341840744019,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query"
+    ],
+    "top_retrieved_modules": [
+      "functools"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity"
+    ],
+    "category": "python_general_out_of_scope",
+    "failure_bucket": "python-general leakage"
+  },
+  {
+    "query_id": "man-024",
+    "query": "how do I do async file operations in Python?",
+    "expected_type": "clarify",
+    "predicted_type": "refuse",
+    "gate_decision": "answer",
+    "top_score": 0.615492582321167,
+    "second_score": 0.5560889840126038,
+    "score_margin": 0.05940359830856323,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules"
+    ],
+    "top_retrieved_modules": [
+      "asyncio",
+      "concurrent.futures",
+      "multiprocessing"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity",
+      "post_generation_refusal_override"
+    ],
+    "category": "recoverable_should_clarify",
+    "failure_bucket": "clarify vs refuse confusion"
+  },
+  {
+    "query_id": "man-027",
+    "query": "how do I cache results in Python?",
+    "expected_type": "clarify",
+    "predicted_type": "answer",
+    "gate_decision": "answer",
+    "top_score": 0.643462061882019,
+    "second_score": 0.6236273050308228,
+    "score_margin": 0.01983475685119629,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules",
+      "top score margin 0.020 < margin_min 0.030"
+    ],
+    "top_retrieved_modules": [
+      "collections",
+      "functools"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity"
+    ],
+    "category": "recoverable_should_clarify",
+    "failure_bucket": "other repeated bucket (clarify->answer, ambiguity)"
+  },
+  {
+    "query_id": "man-029",
+    "query": "how do I center a div in CSS?",
+    "expected_type": "refuse",
+    "predicted_type": "clarify",
+    "gate_decision": "clarify",
+    "top_score": 0.27915501594543457,
+    "second_score": 0.22559836506843567,
+    "score_margin": 0.0535566508769989,
+    "mismatch_status": "recoverable",
+    "mismatch_reasons": [
+      "query module hints ['css'] not present in top modules ['string']"
+    ],
+    "ambiguity_flags": [],
+    "top_retrieved_modules": [
+      "string",
+      "statistics"
+    ],
+    "decision_trigger_primary": "mismatch_recoverable",
+    "decision_trigger_path": [
+      "mismatch_recoverable"
+    ],
+    "category": "out_of_domain_unanswerable",
+    "failure_bucket": "clarify vs refuse confusion"
+  },
+  {
+    "query_id": "man-030",
+    "query": "explain gradient descent in machine learning",
+    "expected_type": "refuse",
+    "predicted_type": "clarify",
+    "gate_decision": "clarify",
+    "top_score": 0.26210087537765503,
+    "second_score": 0.20623865723609924,
+    "score_margin": 0.055862218141555786,
+    "mismatch_status": "recoverable",
+    "mismatch_reasons": [
+      "query module hints ['machine'] not present in top modules ['itertools', 'math']"
+    ],
+    "ambiguity_flags": [
+      "top evidence spans multiple modules"
+    ],
+    "top_retrieved_modules": [
+      "itertools",
+      "math",
+      "logging"
+    ],
+    "decision_trigger_primary": "mismatch_recoverable",
+    "decision_trigger_path": [
+      "mismatch_recoverable",
+      "ambiguity"
+    ],
+    "category": "out_of_domain_unanswerable",
+    "failure_bucket": "clarify vs refuse confusion"
+  },
+  {
+    "query_id": "man-032",
+    "query": "what is the plot of Dune?",
+    "expected_type": "refuse",
+    "predicted_type": "clarify",
+    "gate_decision": "clarify",
+    "top_score": 0.2836318016052246,
+    "second_score": 0.24234932661056519,
+    "score_margin": 0.041282474994659424,
+    "mismatch_status": "not_applicable",
+    "mismatch_reasons": [
+      "mismatch checks not applicable: query lacks explicit module/symbol intent"
+    ],
+    "ambiguity_flags": [
+      "no explicit module/symbol target in query",
+      "top evidence spans multiple modules"
+    ],
+    "top_retrieved_modules": [
+      "math",
+      "threading",
+      "pathlib",
+      "multiprocessing"
+    ],
+    "decision_trigger_primary": "ambiguity",
+    "decision_trigger_path": [
+      "ambiguity"
+    ],
+    "category": "out_of_domain_unanswerable",
+    "failure_bucket": "clarify vs refuse confusion"
+  }
+]

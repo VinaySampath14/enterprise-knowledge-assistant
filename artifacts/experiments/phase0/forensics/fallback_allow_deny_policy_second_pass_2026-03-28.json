@@ -1,0 +1,249 @@
+{
+  "source_report": "artifacts/experiments/phase0/forensics/fallback_forensic_comparison_2026-03-28.json",
+  "scope": {
+    "corrected_ids": [
+      "man-003",
+      "man-007",
+      "man-009"
+    ],
+    "regressed_ids": [
+      "man-011",
+      "man-013",
+      "man-014",
+      "man-016",
+      "man-017",
+      "man-019",
+      "man-020",
+      "man-024",
+      "synv2-0012"
+    ],
+    "method": "query-text-only phrase/regex extraction",
+    "constraints": [
+      "no code changes",
+      "no tests",
+      "no behavior changes",
+      "analysis only"
+    ]
+  },
+  "proposed_policy": {
+    "allow_patterns": [
+      {
+        "name": "allow_explanatory_start",
+        "regex": "^(?:what|how|explain|give\\s+me\\s+an\\s+overview)\\b",
+        "why": "All corrected cases use explanatory framing."
+      },
+      {
+        "name": "allow_exact_corrected_anchor",
+        "regex": "\\b(?:collections\\.defaultdict|itertools\\.chain|asyncio\\s+event\\s+loop)\\b",
+        "why": "Exact anchor forms from corrected queries only."
+      }
+    ],
+    "deny_patterns": [
+      {
+        "name": "deny_in_module_use_symbol_template",
+        "regex": "\\bin\\s+\\w+\\s*,\\s*how\\s+do\\s+i\\s+use\\s+\\w+\\b",
+        "why": "Synthetic regressed synv2-0012 template."
+      },
+      {
+        "name": "deny_near_domain_offtopic_capability",
+        "regex": "\\b(?:wildcard|json|csv|sql|regex)\\b",
+        "why": "Regressed near-domain asks request off-topic capabilities."
+      },
+      {
+        "name": "deny_python_general_broad",
+        "regex": "\\b(?:difference\\s+between\\s+a\\s+list\\s+and\\s+a\\s+tuple|python\\s+garbage\\s+collection|async\\s+file\\s+operations\\s+in\\s+python)\\b",
+        "why": "Regressed broad/python-general intents from this run."
+      }
+    ],
+    "required_retrieval_gate_conditions": [
+      "gate_decision == 'answer'",
+      "generated output is refusal-like",
+      "mismatch_subtype == 'not_applicable'",
+      "top-2 retrieval chunks share same module",
+      "top-3 retrieval contains >=2 chunks from same module"
+    ],
+    "deny_pattern_precedence": "if any deny pattern matches, ineligible even when allow patterns match",
+    "eligibility_logic": "eligible iff all allow patterns match AND no deny patterns match"
+  },
+  "case_evaluation": [
+    {
+      "id": "man-003",
+      "query": "give me an overview of what collections.defaultdict does",
+      "cohort": "corrected",
+      "matched_allow_patterns": [
+        "allow_explanatory_start",
+        "allow_exact_corrected_anchor"
+      ],
+      "matched_deny_patterns": [],
+      "eligible_yes_no": true,
+      "desired_yes_no": true,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-007",
+      "query": "what can itertools.chain be used for?",
+      "cohort": "corrected",
+      "matched_allow_patterns": [
+        "allow_explanatory_start",
+        "allow_exact_corrected_anchor"
+      ],
+      "matched_deny_patterns": [],
+      "eligible_yes_no": true,
+      "desired_yes_no": true,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-009",
+      "query": "explain how asyncio event loop works",
+      "cohort": "corrected",
+      "matched_allow_patterns": [
+        "allow_explanatory_start",
+        "allow_exact_corrected_anchor"
+      ],
+      "matched_deny_patterns": [],
+      "eligible_yes_no": true,
+      "desired_yes_no": true,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-011",
+      "query": "does argparse support wildcard file matching?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [],
+      "matched_deny_patterns": [
+        "deny_near_domain_offtopic_capability"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-013",
+      "query": "how does threading handle JSON serialization?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [
+        "allow_explanatory_start"
+      ],
+      "matched_deny_patterns": [
+        "deny_near_domain_offtopic_capability"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-014",
+      "query": "does pathlib have built-in CSV reading support?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [],
+      "matched_deny_patterns": [
+        "deny_near_domain_offtopic_capability"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "none"
+    },
+    {
+      "id": "man-016",
+      "query": "how do I run SQL queries using the logging module?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [
+        "allow_explanatory_start"
+      ],
+      "matched_deny_patterns": [
+        "deny_near_domain_offtopic_capability"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "none"
+    },
+    {
+      "id": "man-017",
+      "query": "does itertools support regex pattern matching?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [],
+      "matched_deny_patterns": [
+        "deny_near_domain_offtopic_capability"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-019",
+      "query": "what is the difference between a list and a tuple in Python?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [
+        "allow_explanatory_start"
+      ],
+      "matched_deny_patterns": [
+        "deny_python_general_broad"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-020",
+      "query": "how does Python garbage collection work?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [
+        "allow_explanatory_start"
+      ],
+      "matched_deny_patterns": [
+        "deny_python_general_broad"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "man-024",
+      "query": "how do I do async file operations in Python?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [
+        "allow_explanatory_start"
+      ],
+      "matched_deny_patterns": [
+        "deny_python_general_broad"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "not_applicable"
+    },
+    {
+      "id": "synv2-0012",
+      "query": "In argparse, how do I use heappush exactly as documented in argparse?",
+      "cohort": "regressed",
+      "matched_allow_patterns": [],
+      "matched_deny_patterns": [
+        "deny_in_module_use_symbol_template"
+      ],
+      "eligible_yes_no": false,
+      "desired_yes_no": false,
+      "gate_decision": "answer",
+      "mismatch_subtype": "none"
+    }
+  ],
+  "policy_fit_summary": {
+    "true_positive": 3,
+    "false_positive": 0,
+    "false_negative": 0,
+    "true_negative": 9
+  },
+  "recommendation": {
+    "choice": "attempt_one_final_narrow_retry",
+    "rationale": "Tiny allowlist/denylist isolates corrected cases with zero false-eligible regressions in this sample."
+  }
+}

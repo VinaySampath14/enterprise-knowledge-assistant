@@ -1,0 +1,34 @@
+# =========================================
+# Enterprise Knowledge Assistant - Config
+# =========================================
+
+chunking:
+  chunk_size: 800
+  overlap: 150
+
+embeddings:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  normalize: true        # normalize embeddings for cosine similarity
+  batch_size: 64         # embedding batch size
+
+index:
+  index_path: "indexes/faiss.index"
+  meta_path: "indexes/meta.jsonl"
+
+retrieval:
+  top_k: 5
+
+confidence:
+  threshold_high: 0.40
+  threshold_low: 0.25
+  margin_min: 0.03
+
+logging:
+  enabled: true
+  path: "logs/queries.jsonl"
+ 
+
+generation:
+  enabled: true
+  model: "gpt-4o-mini"
+  temperature: 0.0

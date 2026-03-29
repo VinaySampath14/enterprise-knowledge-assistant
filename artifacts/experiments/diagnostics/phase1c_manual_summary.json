@@ -1,0 +1,42 @@
+{
+  "overall_accuracy_delta": 0.06060606060606055,
+  "bucket_deltas": {
+    "clarify vs refuse confusion": {
+      "before": 5,
+      "after": 5,
+      "delta": 0
+    },
+    "conceptual in-domain false refusals": {
+      "before": 2,
+      "after": 2,
+      "delta": 0
+    },
+    "python-general leakage": {
+      "before": 4,
+      "after": 2,
+      "delta": -2
+    }
+  },
+  "tie_breaker_fired_count": 2,
+  "changed_decision_count": 2,
+  "changed_decisions": [
+    {
+      "id": "man-018",
+      "query": "how do I install numpy?",
+      "expected_type": "refuse",
+      "before_predicted_type": "clarify",
+      "after_predicted_type": "refuse",
+      "tie_breaker_fired": true,
+      "gate_rationale": "PHASE1B_INTENT_TIEBREAKER_REFUSE | intent: package install/setup; intent: third-party library/framework; trigger: high ambiguity + no explicit stdlib target; decision: clarify->refuse via phase1b tie-breaker"
+    },
+    {
+      "id": "man-022",
+      "query": "how do I use pandas to filter a dataframe?",
+      "expected_type": "refuse",
+      "before_predicted_type": "clarify",
+      "after_predicted_type": "refuse",
+      "tie_breaker_fired": true,
+      "gate_rationale": "PHASE1B_INTENT_TIEBREAKER_REFUSE | intent: third-party library/framework; intent: data-science/ml concept outside stdlib docs; trigger: high ambiguity + no explicit stdlib target; decision: clarify->refuse via phase1b tie-breaker"
+    }
+  ]
+}

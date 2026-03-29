@@ -1,0 +1,8 @@
+# Phase0 baseline invocation
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_phase0_baseline.py --dataset eval_v2/synthetic_scaffold_dataset_refined.jsonl --category-field refined_category --expected-type-field expected_type_refined --phase-dir artifacts/experiments/phase0 --run-id V2_phase0_20260329_202919_candidate --repro-threshold 0.95
+
+# Run A
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval_v2/synthetic_scaffold_dataset_refined.jsonl --results artifacts/experiments/phase0/V2_phase0_20260329_202919_candidate/predictions_run_a.jsonl --summary artifacts/experiments/phase0/V2_phase0_20260329_202919_candidate/summary_run_a.json --category-field refined_category --expected-type-field expected_type_refined
+
+# Run B
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval_v2/synthetic_scaffold_dataset_refined.jsonl --results artifacts/experiments/phase0/V2_phase0_20260329_202919_candidate/predictions_run_b.jsonl --summary artifacts/experiments/phase0/V2_phase0_20260329_202919_candidate/summary_run_b.json --category-field refined_category --expected-type-field expected_type_refined

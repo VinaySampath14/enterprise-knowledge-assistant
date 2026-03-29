@@ -61,10 +61,45 @@ def _load_chunk_candidates(chunks_path: Path, per_module_limit: int = 5) -> List
     return out
 
 
+def _interleave_candidates_by_module(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Interleave candidates by module so early rows are not dominated by one module.
+    """
+    by_module: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for c in candidates:
+        by_module[str(c.get("module", ""))].append(c)
+
+    modules = sorted(m for m in by_module.keys() if m)
+    out: List[Dict[str, Any]] = []
+
+    while True:
+        progressed = False
+        for module in modules:
+            bucket = by_module[module]
+            if not bucket:
+                continue
+            out.append(bucket.pop(0))
+            progressed = True
+        if not progressed:
+            break
+
+    return out
+
+
 def _make_in_domain_items(candidates: List[Dict[str, Any]], target_n: int = 8) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
+    function_templates = [
+        "How do I use {fn} in the {module} module?",
+        "What is the purpose of {fn} in Python's {module} module?",
+        "Show when to use {fn} from {module}.",
+    ]
+    module_templates = [
+        "What does the {module} module provide in Python standard library?",
+        "When should I use the Python {module} module?",
+        "Give a quick overview of Python's {module} module.",
+    ]
 
-    for c in candidates:
+    for i, c in enumerate(candidates):
         if len(items) >= target_n:
             break
 
@@ -72,10 +107,12 @@ def _make_in_domain_items(candidates: List[Dict[str, Any]], target_n: int = 8) -
         fn = c.get("function_name")
 
         if fn:
-            query = f"How do I use {fn} in the {module} module?"
+            template = function_templates[i % len(function_templates)]
+            query = template.format(fn=fn, module=module)
             note = "Function-targeted in-domain question generated from chunk function directive."
         else:
-            query = f"What does the {module} module provide in Python standard library?"
+            template = module_templates[i % len(module_templates)]
+            query = template.format(module=module)
             note = "Module-level in-domain question generated from chunk text."
 
         items.append(
@@ -103,21 +140,40 @@ def _make_in_domain_items(candidates: List[Dict[str, Any]], target_n: int = 8) -
 
 def _make_adversarial_items(candidates: List[Dict[str, Any]], target_n: int = 7) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
+    templates = [
+        "In {module_a}, how do I use {fn_b} exactly as documented in {module_a}?",
+        "Can you show {fn_b} usage for {module_a} as if it belonged there?",
+        "Where is {fn_b} documented inside {module_a}?",
+    ]
 
     funcs = [c for c in candidates if c.get("function_name")]
     if not funcs:
         funcs = candidates
 
+    used_pairs = set()
     for i, c in enumerate(candidates):
         if len(items) >= target_n:
             break
 
-        other = funcs[(i + 3) % len(funcs)] if funcs else c
         module_a = c["module"]
+        other = None
+        for offset in range(1, len(funcs) + 1):
+            candidate_other = funcs[(i + offset) % len(funcs)]
+            module_b = candidate_other["module"]
+            pair = (module_a, module_b)
+            if module_b != module_a and pair not in used_pairs:
+                other = candidate_other
+                used_pairs.add(pair)
+                break
+
+        if other is None:
+            continue
+
         fn_b = other.get("function_name") or "nonexistent_feature"
         module_b = other["module"]
 
-        query = f"In {module_a}, how do I use {fn_b} exactly as documented in {module_a}?"
+        template = templates[i % len(templates)]
+        query = template.format(module_a=module_a, fn_b=fn_b)
 
         items.append(
             {
@@ -216,7 +272,7 @@ def build_synthetic_scaffold(
     out_dataset = repo_root / "eval_v2" / "synthetic_scaffold_dataset.jsonl"
     out_summary = repo_root / "eval_v2" / "synthetic_scaffold_summary.json"
 
-    candidates = _load_chunk_candidates(chunks_path)
+    candidates = _interleave_candidates_by_module(_load_chunk_candidates(chunks_path))
 
     in_domain = _make_in_domain_items(candidates, target_n=in_domain_n)
     adversarial = _make_adversarial_items(candidates, target_n=adversarial_n)

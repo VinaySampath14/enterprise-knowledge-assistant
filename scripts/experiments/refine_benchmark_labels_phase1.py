@@ -122,13 +122,14 @@ def main() -> None:
     out_summary = repo_root / "eval_v2" / "refined_label_policy_summary.json"
 
     eval_v2_items = list(iter_jsonl(src_eval_v2))
-    diag_items = list(iter_jsonl(src_diag))
+    diag_items = list(iter_jsonl(src_diag)) if src_diag.exists() else []
 
     refined_eval_v2 = _refine_items(eval_v2_items, "eval_v2.synthetic_scaffold")
     refined_diag = _refine_items(diag_items, "eval.diagnostic_citation_signal")
 
     write_jsonl(out_eval_v2, refined_eval_v2, append=False)
-    write_jsonl(out_diag, refined_diag, append=False)
+    if refined_diag:
+        write_jsonl(out_diag, refined_diag, append=False)
 
     combined = refined_eval_v2 + refined_diag
 
@@ -145,7 +146,7 @@ def main() -> None:
         },
         "artifacts": {
             "eval_v2_refined_dataset": str(out_eval_v2),
-            "diagnostic_refined_dataset": str(out_diag),
+            "diagnostic_refined_dataset": str(out_diag) if refined_diag else None,
         },
         "counts_per_refined_category": dict(
             sorted(Counter(str(x.get("refined_category", "unknown")) for x in combined).items())
@@ -178,7 +179,10 @@ def main() -> None:
     out_summary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     print(f"[OK] Wrote refined eval_v2 dataset: {out_eval_v2}")
-    print(f"[OK] Wrote refined diagnostic dataset: {out_diag}")
+    if refined_diag:
+        print(f"[OK] Wrote refined diagnostic dataset: {out_diag}")
+    else:
+        print(f"[OK] Diagnostic dataset missing at {src_diag}; skipped diagnostic refine output.")
     print(f"[OK] Wrote policy summary: {out_summary}")
     print(json.dumps(summary, indent=2))
 

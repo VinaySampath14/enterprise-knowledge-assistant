@@ -1,0 +1,15 @@
+{
+  "step2_h0": {
+    "what_changed": "Refactor confidence gate to evidence-only decisioning",
+    "gate_verdict": "GO",
+    "run_id": "mlflow-run-id-or-phase-run-id",
+    "notes": "Reference baseline after confidence gate cleanup",
+    "faithfulness": 0.0
+  },
+  "step3_h1": {
+    "what_changed": "Add conservative upstream intent classifier",
+    "gate_verdict": "GO",
+    "run_id": "mlflow-run-id-or-phase-run-id",
+    "notes": "Improved manual/holdout with no synthetic change"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "step2_h0": {
+    "what_changed": "Baseline after confidence-gate cleanup",
+    "notes": "Reference baseline row"
+  },
+  "step3_h1_synthetic_refresh": {
+    "what_changed": "Intent layer (upstream conservative routing)",
+    "notes": "Strong quality lift vs baseline; false-refusal still slightly high"
+  },
+  "step4_h2_soften_refusal": {
+    "what_changed": "Broad post-gen refusal soften to clarify",
+    "notes": "Rejected: large accuracy regression"
+  },
+  "step4b_h2_grounded_rescue": {
+    "what_changed": "Narrow grounded rescue fallback",
+    "notes": "Recovered from step4 regression; similar to v1"
+  },
+  "step5_h3_symbol_anchor": {
+    "what_changed": "Symbol-anchor rescue refinement",
+    "notes": "No material change vs v3"
+  },
+  "step6_h4_symbol_retrieval": {
+    "what_changed": "Retrieval rerank for explicit dotted symbols",
+    "notes": "Current champion: improves manual and drops false-refusal to 0.0303"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "required_artifacts_present": true,
+  "reproducibility_passed": true,
+  "reproducibility_threshold": 0.95,
+  "decision": "GO"
+}

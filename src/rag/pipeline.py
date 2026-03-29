@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 from src.retrieval.retriever import Retriever
 from src.rag.confidence import ConfidenceGate
 from src.rag.generator import Generator
+from src.rag.intent import classify_query_intent, should_refuse_upstream
 from src.rag.prompt import format_retrieved_chunks
 
 
@@ -106,13 +107,48 @@ def _is_strong_stdlib_coherence(chunks: List[Any]) -> bool:
     return same_module or (concentrated and stdlib_paths >= 2)
 
 
+def _extract_explicit_symbol_mentions(query: str) -> set[str]:
+    q = (query or "").lower()
+    return set(re.findall(r"\b([a-z_][\w]*\.[a-z_][\w]*)\b", q))
+
+
+def _evidence_blob(chunks: List[Any], top_n: int = 3) -> str:
+    parts: List[str] = []
+    for c in chunks[:top_n]:
+        parts.append((getattr(c, "text", "") or "").lower())
+        parts.append((getattr(c, "heading", "") or "").lower())
+        parts.append((getattr(c, "module", "") or "").lower())
+    return "\n".join(parts)
+
+
 def _has_grounded_stdlib_signal(
     answer_text: str,
     chunks: List[Any],
     citation_ids: List[int],
+    *,
+    top_score: float,
+    gate: ConfidenceGate,
+    module_hints: set[str],
+    use_target: str | None,
+    symbol_hints: set[str],
 ) -> bool:
-    # Safety-first: require explicit citation linkage for override blocking.
-    return bool(citation_ids)
+    # Primary signal: explicit citation linkage.
+    if citation_ids:
+        return True
+
+    # Step-4b narrow fallback: if citations are missing, allow rescue only for
+    # strong in-domain anchored queries with coherent evidence.
+    if not (module_hints or use_target or symbol_hints):
+        return False
+    if top_score < (gate.th_high + 0.05):
+        return False
+    if not _is_strong_stdlib_coherence(chunks):
+        return False
+    if symbol_hints:
+        evidence = _evidence_blob(chunks, top_n=3)
+        if not any(sym in evidence for sym in symbol_hints):
+            return False
+    return True
 
 
 def _should_block_post_generation_refusal_override(
@@ -135,11 +171,21 @@ def _should_block_post_generation_refusal_override(
         return False, reasons
     if not _is_strong_stdlib_coherence(used_chunks):
         return False, reasons
-    if not _has_grounded_stdlib_signal(answer_text, used_chunks, citation_ids):
-        return False, reasons
-
     module_hints = gate._extract_module_hints(query)  # noqa: SLF001
     use_target = gate._extract_use_target(query)  # noqa: SLF001
+    symbol_hints = _extract_explicit_symbol_mentions(query)
+    if not _has_grounded_stdlib_signal(
+        answer_text,
+        used_chunks,
+        citation_ids,
+        top_score=float(used_chunks[0].score) if used_chunks else 0.0,
+        gate=gate,
+        module_hints=module_hints,
+        use_target=use_target,
+        symbol_hints=symbol_hints,
+    ):
+        return False, reasons
+
     has_plausible_anchor = gate._has_plausible_stdlib_anchor(  # noqa: SLF001
         query,
         used_chunks,
@@ -162,7 +208,7 @@ def _should_block_post_generation_refusal_override(
     reasons.append("guard: gate_decision=answer")
     reasons.append("guard: mismatch not hard/recoverable")
     reasons.append("guard: strong stdlib coherence")
-    reasons.append("guard: grounded evidence/citation signal present")
+    reasons.append("guard: grounded evidence signal present (citations or strong anchored coherence with symbol evidence)")
     reasons.append("guard: plausible in-domain stdlib/module/function anchor")
     reasons.append("guard: no python-general out-of-scope intent signal")
     return True, reasons
@@ -179,6 +225,39 @@ class RAGPipeline:
         request_id = request_id or str(uuid.uuid4())
 
         t0 = time.perf_counter()
+
+        intent = classify_query_intent(query)
+        if should_refuse_upstream(intent):
+            t1 = time.perf_counter()
+            return {
+                "type": "refuse",
+                "answer": "I do not have enough information in the Python standard library documentation to answer that.",
+                "confidence": 0.0,
+                "sources": [],
+                "citations": [],
+                "meta": {
+                    "top_score": 0.0,
+                    "second_score": 0.0,
+                    "score_margin": 0.0,
+                    "gate_decision": "refuse",
+                    "gate_rationale": "Step-3 upstream intent route refused query before retrieval.",
+                    "gate_tie_breaker_fired": False,
+                    "intent_label": intent.label,
+                    "intent_confidence": float(intent.confidence),
+                    "intent_rationale": intent.rationale,
+                    "intent_signals": intent.signals,
+                    "intent_routed_refuse": True,
+                    "postgen_refusal_override_triggered": False,
+                    "postgen_refusal_override_blocked": False,
+                    "postgen_refusal_override_block_reasons": [],
+                    "postgen_refusal_override_rescue_code": "",
+                    "retrieved_k": 0,
+                    "latency_ms_total": (t1 - t0) * 1000,
+                    "latency_ms_retrieval": 0.0,
+                    "latency_ms_generation": 0.0,
+                    "request_id": request_id,
+                },
+            }
 
         # --- Retrieval ---
         t_retrieval_start = time.perf_counter()
@@ -292,6 +371,11 @@ class RAGPipeline:
                 "gate_tie_breaker_fired": (
                     "PHASE1B_INTENT_TIEBREAKER_REFUSE" in (decision.rationale or "")
                 ),
+                "intent_label": intent.label,
+                "intent_confidence": float(intent.confidence),
+                "intent_rationale": intent.rationale,
+                "intent_signals": intent.signals,
+                "intent_routed_refuse": False,
                 "postgen_refusal_override_triggered": (
                     bool(override_triggered)
                     if decision.decision == "answer"

@@ -1,0 +1,20 @@
+{"id":"hld-001","category":"in_domain_answerable","query":"When should I pick threads versus processes in standard Python?","expected_type":"answer","difficulty":"medium"}
+{"id":"hld-002","category":"in_domain_answerable","query":"How are log severity levels handled by the logging package?","expected_type":"answer","difficulty":"easy"}
+{"id":"hld-003","category":"in_domain_answerable","query":"What practical job does itertools.chain solve?","expected_type":"answer","difficulty":"easy"}
+{"id":"hld-004","category":"in_domain_answerable","query":"How do I write objects to disk and load them again with stdlib tools?","expected_type":"answer","difficulty":"medium"}
+{"id":"hld-005","category":"near_domain_should_refuse","query":"Can argparse do wildcard expansion for file names by itself?","expected_type":"refuse","difficulty":"hard"}
+{"id":"hld-006","category":"near_domain_should_refuse","query":"Is pathlib the module to parse CSV rows directly?","expected_type":"refuse","difficulty":"hard"}
+{"id":"hld-007","category":"near_domain_should_refuse","query":"Can heapq send HTTP API requests?","expected_type":"refuse","difficulty":"hard"}
+{"id":"hld-008","category":"near_domain_should_refuse","query":"Does itertools provide regex matching operations?","expected_type":"refuse","difficulty":"hard"}
+{"id":"hld-009","category":"python_general_out_of_scope","query":"How do I install pandas in my environment?","expected_type":"refuse","difficulty":"easy"}
+{"id":"hld-010","category":"python_general_out_of_scope","query":"Explain the GIL like I am new to Python internals.","expected_type":"refuse","difficulty":"medium"}
+{"id":"hld-011","category":"python_general_out_of_scope","query":"What is the real difference between tuple and list?","expected_type":"refuse","difficulty":"easy"}
+{"id":"hld-012","category":"python_general_out_of_scope","query":"How does Python garbage collection decide what to free?","expected_type":"refuse","difficulty":"medium"}
+{"id":"hld-013","category":"recoverable_should_clarify","query":"How can I run a task every few minutes using stdlib?","expected_type":"clarify","difficulty":"medium"}
+{"id":"hld-014","category":"recoverable_should_clarify","query":"What stdlib module should I use for handling date and time values?","expected_type":"clarify","difficulty":"hard"}
+{"id":"hld-015","category":"recoverable_should_clarify","query":"Best stdlib way to handle concurrency overall?","expected_type":"clarify","difficulty":"medium"}
+{"id":"hld-016","category":"recoverable_should_clarify","query":"How do I use sqlite_conect from sqlite3?","expected_type":"clarify","difficulty":"medium"}
+{"id":"hld-017","category":"out_of_domain_unanswerable","query":"How do I center content in CSS flexbox?","expected_type":"refuse","difficulty":"easy"}
+{"id":"hld-018","category":"out_of_domain_unanswerable","query":"Who won the 2018 football world cup?","expected_type":"refuse","difficulty":"easy"}
+{"id":"hld-019","category":"out_of_domain_unanswerable","query":"Recommend a good budget laptop this year.","expected_type":"refuse","difficulty":"easy"}
+{"id":"hld-020","category":"out_of_domain_unanswerable","query":"Give me a simple explanation of quantum entanglement.","expected_type":"refuse","difficulty":"easy"}

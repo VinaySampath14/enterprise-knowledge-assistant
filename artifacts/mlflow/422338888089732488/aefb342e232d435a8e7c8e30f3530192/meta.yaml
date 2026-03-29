@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Vinay/OneDrive/Desktop/enterprise-knowledge-assistant/artifacts/mlflow/422338888089732488/aefb342e232d435a8e7c8e30f3530192/artifacts
+end_time: 1774813206460
+entry_point_name: ''
+experiment_id: '422338888089732488'
+lifecycle_stage: active
+run_id: aefb342e232d435a8e7c8e30f3530192
+run_name: phase_gate::synthetic_scaffold_dataset_refined.jsonl
+run_uuid: aefb342e232d435a8e7c8e30f3530192
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1774813205898
+status: 3
+tags: []
+user_id: Vinay

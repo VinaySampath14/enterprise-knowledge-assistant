@@ -1,0 +1,18 @@
+{
+  "total_queries": 20,
+  "predicted_type_counts": {
+    "answer": 3,
+    "refuse": 12,
+    "clarify": 5
+  },
+  "clarify_rate": 0.25,
+  "false_refusal_rate": 0.25,
+  "false_answer_rate": 0.0,
+  "raw": {
+    "expected_answer_total": 4,
+    "expected_refuse_total": 12,
+    "expected_answer_pred_refuse": 1,
+    "expected_refuse_pred_answer": 0,
+    "clarify_total": 5
+  }
+}

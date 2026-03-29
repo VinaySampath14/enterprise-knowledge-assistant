@@ -1,0 +1,8 @@
+# Phase0 baseline invocation
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_phase0_baseline.py --dataset eval/holdout_paraphrases.jsonl --category-field category --expected-type-field expected_type --phase-dir artifacts/experiments/phase0 --run-id V1_phase0_20260329_163011_baseline --repro-threshold 0.95
+
+# Run A
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval/holdout_paraphrases.jsonl --results artifacts/experiments/phase0/V1_phase0_20260329_163011_baseline/predictions_run_a.jsonl --summary artifacts/experiments/phase0/V1_phase0_20260329_163011_baseline/summary_run_a.json --category-field category --expected-type-field expected_type
+
+# Run B
+C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval/holdout_paraphrases.jsonl --results artifacts/experiments/phase0/V1_phase0_20260329_163011_baseline/predictions_run_b.jsonl --summary artifacts/experiments/phase0/V1_phase0_20260329_163011_baseline/summary_run_b.json --category-field category --expected-type-field expected_type

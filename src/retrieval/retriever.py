@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import re
 
 import numpy as np
 import faiss
@@ -77,10 +78,42 @@ class Retriever:
         # top_k from config
         self.top_k = int(self.cfg.retrieval.top_k)
 
+    @staticmethod
+    def _extract_symbol_mentions(query: str) -> List[str]:
+        q = (query or "").lower()
+        return re.findall(r"\b([a-z_][\w]*\.[a-z_][\w]*)\b", q)
+
+    @staticmethod
+    def _symbol_rerank(results: List[RetrievedChunk], query: str) -> List[RetrievedChunk]:
+        symbols = Retriever._extract_symbol_mentions(query)
+        if not symbols:
+            return results
+
+        def bonus(hit: RetrievedChunk) -> float:
+            text = (hit.text or "").lower()
+            heading = (hit.heading or "").lower()
+            module = (hit.module or "").lower()
+
+            b = 0.0
+            for sym in symbols:
+                mod_prefix = sym.split(".", 1)[0]
+                if sym in text or sym in heading:
+                    b += 0.08
+                if module == mod_prefix:
+                    b += 0.03
+            return b
+
+        return sorted(results, key=lambda h: float(h.score) + bonus(h), reverse=True)
+
     def retrieve(self, query: str, *, top_k: Optional[int] = None) -> List[RetrievedChunk]:
         k = int(top_k or self.top_k)
         if k <= 0:
             return []
+
+        symbol_mentions = self._extract_symbol_mentions(query)
+        fetch_k = k
+        if symbol_mentions:
+            fetch_k = min(max(k * 3, 10), int(self.index.ntotal))
 
         # Embed query (shape: (1, dim))
         q_vec = self.embedder.encode([query])
@@ -90,7 +123,7 @@ class Retriever:
 
 
         # Search
-        scores, ids = self.index.search(q_vec, k)  # scores: (1,k), ids: (1,k)
+        scores, ids = self.index.search(q_vec, fetch_k)  # scores: (1,k), ids: (1,k)
         scores = scores[0]
         ids = ids[0]
 
@@ -118,4 +151,7 @@ class Retriever:
                 )
             )
 
-        return results
+        if symbol_mentions:
+            results = self._symbol_rerank(results, query)
+
+        return results[:k]

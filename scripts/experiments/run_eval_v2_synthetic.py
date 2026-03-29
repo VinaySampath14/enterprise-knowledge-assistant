@@ -13,6 +13,7 @@ if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
 from src.rag.pipeline import RAGPipeline
+from src.monitoring.mlflow_tracking import log_eval_tracking, resolve_tracking_uri
 from src.utils.jsonl import iter_jsonl, write_jsonl
 
 
@@ -125,6 +126,21 @@ def main() -> None:
         default="expected_type",
         help="Dataset field to use as expected label (e.g., expected_type or expected_type_refined).",
     )
+    parser.add_argument(
+        "--mlflow-experiment",
+        default="eka-eval",
+        help="MLflow experiment name for tracking runs.",
+    )
+    parser.add_argument(
+        "--disable-mlflow",
+        action="store_true",
+        help="Disable MLflow tracking for this run.",
+    )
+    parser.add_argument(
+        "--ablation-version",
+        default="",
+        help="Optional version label (e.g., H0_clean_gate, v3_intent_clf) for MLflow grouping.",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[2]
@@ -186,6 +202,31 @@ def main() -> None:
     }
 
     out_summary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    if not args.disable_mlflow:
+        tracking_uri = log_eval_tracking(
+            repo_root=repo_root,
+            experiment_name=args.mlflow_experiment,
+            run_name=f"eval::{Path(args.dataset).name}",
+            params={
+                "dataset": args.dataset,
+                "category_field": args.category_field,
+                "expected_type_field": args.expected_type_field,
+                "results_path": args.results,
+                "summary_path": args.summary,
+            },
+            tags={
+                "run_type": "eval_only",
+                "script": "run_eval_v2_synthetic.py",
+                "tracking_uri": resolve_tracking_uri(repo_root),
+                "ablation_version": args.ablation_version,
+            },
+            summary=summary,
+            summary_path=out_summary,
+            results_path=out_results,
+        )
+        if tracking_uri:
+            print(f"[OK] MLflow tracked: {tracking_uri}")
 
     print(f"[OK] Wrote eval_v2 results: {out_results}")
     print(f"[OK] Wrote eval_v2 summary: {out_summary}")

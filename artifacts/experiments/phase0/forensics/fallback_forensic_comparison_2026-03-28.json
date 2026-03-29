@@ -1,0 +1,1124 @@
+{
+  "experiment": {
+    "manual_baseline_run": "V1_phase0_20260328_151928_baseline",
+    "manual_candidate_run": "V2_phase0_20260328_160027_candidate",
+    "synthetic_baseline_run": "V1_phase0_20260328_151738_baseline",
+    "synthetic_candidate_run": "V2_phase0_20260328_155824_candidate"
+  },
+  "requested_corrected_ids": [
+    "man-003",
+    "man-007",
+    "man-009"
+  ],
+  "requested_regressed_ids": [
+    "man-011",
+    "man-013",
+    "man-014",
+    "man-016",
+    "man-017",
+    "man-019",
+    "man-020",
+    "man-024",
+    "synv2-0012"
+  ],
+  "cases": [
+    {
+      "id": "man-003",
+      "cohort": "corrected",
+      "dataset": "manual",
+      "query": "give me an overview of what collections.defaultdict does",
+      "category": "in_domain_answerable",
+      "expected_type": "answer",
+      "predicted_type_before": "clarify",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "PHASE2_CONCEPTUAL_RESCUE_ANSWER | trigger: coherent single-module retrieval with stdlib anchor; decision: clarify->answer via conceptual in-domain rescue",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0043",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.6117900609970093,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0077",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.5840023756027222,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0078",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.5567079186439514,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0070",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.5284192562103271,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0064",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.48358142375946045,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "collections",
+        "collections",
+        "collections",
+        "collections",
+        "collections"
+      ],
+      "fallback_attempted": false,
+      "fallback_used": false,
+      "generated_refusal_text_before_fallback": "",
+      "fallback_answer_text": "",
+      "citation_count_before": 0,
+      "citation_count_after": 1,
+      "citation_ids_after_from_preview": [],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": false,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": []
+    },
+    {
+      "id": "man-007",
+      "cohort": "corrected",
+      "dataset": "manual",
+      "query": "what can itertools.chain be used for?",
+      "category": "in_domain_answerable",
+      "expected_type": "answer",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.585 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:itertools.rst#c0049",
+          "doc_id": "py-stdlib:itertools.rst",
+          "module": "itertools",
+          "score": 0.5848299264907837,
+          "source_path": "data/raw/python_stdlib/itertools.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:itertools.rst#c0050",
+          "doc_id": "py-stdlib:itertools.rst",
+          "module": "itertools",
+          "score": 0.4894769787788391,
+          "source_path": "data/raw/python_stdlib/itertools.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0002",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.4174916744232178,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0003",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.4167531132698059,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:itertools.rst#c0045",
+          "doc_id": "py-stdlib:itertools.rst",
+          "module": "itertools",
+          "score": 0.4115060269832611,
+          "source_path": "data/raw/python_stdlib/itertools.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "itertools",
+        "itertools",
+        "collections",
+        "collections",
+        "itertools"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: the number of calls (for example :func:`islice` or :func:`takewhile`). [1] with the :mod:`operator` and :mod:`collections` modules a",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-009",
+      "cohort": "corrected",
+      "dataset": "manual",
+      "query": "explain how asyncio event loop works",
+      "category": "in_domain_answerable",
+      "expected_type": "answer",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.651 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0000",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.6513165235519409,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0002",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.6161812543869019,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:sys.rst#c0113",
+          "doc_id": "py-stdlib:sys.rst",
+          "module": "sys",
+          "score": 0.574398934841156,
+          "source_path": "data/raw/python_stdlib/sys.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0001",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.5697925090789795,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0003",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.558515191078186,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "asyncio",
+        "asyncio",
+        "sys",
+        "asyncio",
+        "asyncio"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: :mod:`!asyncio` --- Asynchronous I/O ==================================== .. [1] * create and manage :ref:`event loops <asyncio-even",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-011",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "does argparse support wildcard file matching?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.615 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0056",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.6148263216018677,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0130",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5445795655250549,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0024",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5370180606842041,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0134",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5227228403091431,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0116",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5226874351501465,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "argparse",
+        "argparse",
+        "argparse",
+        "argparse",
+        "argparse"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: 'output.txt']) Namespace(infile='input.txt', outfile='output.txt') >>> parser.parse_args(['input.txt']) Namespace(infile='input.txt'",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": false,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-013",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "how does threading handle JSON serialization?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.486 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:threading.rst#c0005",
+          "doc_id": "py-stdlib:threading.rst",
+          "module": "threading",
+          "score": 0.48608309030532837,
+          "source_path": "data/raw/python_stdlib/threading.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:threading.rst#c0017",
+          "doc_id": "py-stdlib:threading.rst",
+          "module": "threading",
+          "score": 0.47857028245925903,
+          "source_path": "data/raw/python_stdlib/threading.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:json.rst#c0043",
+          "doc_id": "py-stdlib:json.rst",
+          "module": "json",
+          "score": 0.45519572496414185,
+          "source_path": "data/raw/python_stdlib/json.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:json.rst#c0041",
+          "doc_id": "py-stdlib:json.rst",
+          "module": "json",
+          "score": 0.4272293150424957,
+          "source_path": "data/raw/python_stdlib/json.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:concurrent.futures.rst#c0019",
+          "doc_id": "py-stdlib:concurrent.futures.rst",
+          "module": "concurrent.futures",
+          "score": 0.4213722348213196,
+          "source_path": "data/raw/python_stdlib/concurrent.futures.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "threading",
+        "threading",
+        "json",
+        "json",
+        "concurrent.futures"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: rformance considerations ---------------------------------- Unlike the :mod:`multiprocessing` module, which uses separate processes ",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-014",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "does pathlib have built-in CSV reading support?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.538 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:csv.rst#c0002",
+          "doc_id": "py-stdlib:csv.rst",
+          "module": "csv",
+          "score": 0.5375828742980957,
+          "source_path": "data/raw/python_stdlib/csv.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:csv.rst#c0019",
+          "doc_id": "py-stdlib:csv.rst",
+          "module": "csv",
+          "score": 0.5065708756446838,
+          "source_path": "data/raw/python_stdlib/csv.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:csv.rst#c0033",
+          "doc_id": "py-stdlib:csv.rst",
+          "module": "csv",
+          "score": 0.5025326013565063,
+          "source_path": "data/raw/python_stdlib/csv.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:os.path.rst#c0000",
+          "doc_id": "py-stdlib:os.path.rst",
+          "module": "os.path",
+          "score": 0.47582727670669556,
+          "source_path": "data/raw/python_stdlib/os.path.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:csv.rst#c0003",
+          "doc_id": "py-stdlib:csv.rst",
+          "module": "csv",
+          "score": 0.4687484800815582,
+          "source_path": "data/raw/python_stdlib/csv.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "csv",
+        "csv",
+        "csv",
+        "os.path",
+        "csv"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: thout knowing the precise details of the CSV format used by Excel. [1] note:: This method is a rough heuristic and may produce both ",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "none",
+      "mismatch_reasons": [],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": false,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-016",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "how do I run SQL queries using the logging module?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.547 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:logging.rst#c0000",
+          "doc_id": "py-stdlib:logging.rst",
+          "module": "logging",
+          "score": 0.5467351078987122,
+          "source_path": "data/raw/python_stdlib/logging.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:logging.rst#c0004",
+          "doc_id": "py-stdlib:logging.rst",
+          "module": "logging",
+          "score": 0.5177580118179321,
+          "source_path": "data/raw/python_stdlib/logging.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:logging.rst#c0003",
+          "doc_id": "py-stdlib:logging.rst",
+          "module": "logging",
+          "score": 0.5144299864768982,
+          "source_path": "data/raw/python_stdlib/logging.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:logging.rst#c0075",
+          "doc_id": "py-stdlib:logging.rst",
+          "module": "logging",
+          "score": 0.4929058253765106,
+          "source_path": "data/raw/python_stdlib/logging.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:logging.rst#c0001",
+          "doc_id": "py-stdlib:logging.rst",
+          "module": "logging",
+          "score": 0.4922076463699341,
+          "source_path": "data/raw/python_stdlib/logging.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "logging",
+        "logging",
+        "logging",
+        "logging",
+        "logging"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: :mod:`!logging` --- Logging facility for Python =============================================== .. [1] :func:`~logging.basicConfig` ",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "none",
+      "mismatch_reasons": [],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": true,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-017",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "does itertools support regex pattern matching?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.522 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:re.rst#c0032",
+          "doc_id": "py-stdlib:re.rst",
+          "module": "re",
+          "score": 0.5219476222991943,
+          "source_path": "data/raw/python_stdlib/re.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:re.rst#c0059",
+          "doc_id": "py-stdlib:re.rst",
+          "module": "re",
+          "score": 0.49685919284820557,
+          "source_path": "data/raw/python_stdlib/re.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:re.rst#c0057",
+          "doc_id": "py-stdlib:re.rst",
+          "module": "re",
+          "score": 0.4903983771800995,
+          "source_path": "data/raw/python_stdlib/re.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:re.rst#c0069",
+          "doc_id": "py-stdlib:re.rst",
+          "module": "re",
+          "score": 0.4814128577709198,
+          "source_path": "data/raw/python_stdlib/re.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:re.rst#c0097",
+          "doc_id": "py-stdlib:re.rst",
+          "module": "re",
+          "score": 0.47626355290412903,
+          "source_path": "data/raw/python_stdlib/re.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "re",
+        "re",
+        "re",
+        "re",
+        "re"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: ` | | | * ``\\1`` | +---------------------------------------+----------------------------------+ .. [1] h(pattern, string, flags=0) S",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": false,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-019",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "what is the difference between a list and a tuple in Python?",
+      "category": "python_general_out_of_scope",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.510 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0053",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.5102736353874207,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0057",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.49797481298446655,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:json.rst#c0027",
+          "doc_id": "py-stdlib:json.rst",
+          "module": "json",
+          "score": 0.49753326177597046,
+          "source_path": "data/raw/python_stdlib/json.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:itertools.rst#c0018",
+          "doc_id": "py-stdlib:itertools.rst",
+          "module": "itertools",
+          "score": 0.4939234256744385,
+          "source_path": "data/raw/python_stdlib/itertools.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:collections.rst#c0051",
+          "doc_id": "py-stdlib:collections.rst",
+          "module": "collections",
+          "score": 0.4807625412940979,
+          "source_path": "data/raw/python_stdlib/collections.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "collections",
+        "collections",
+        "json",
+        "itertools",
+        "collections"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: `, eliminating the keyword ``def`` and the duplicate fieldname ``abc``. [1] amed tuples support three additional methods and two att",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": false,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": true
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-020",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "how does Python garbage collection work?",
+      "category": "python_general_out_of_scope",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.552 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:sys.rst#c0013",
+          "doc_id": "py-stdlib:sys.rst",
+          "module": "sys",
+          "score": 0.5516560077667236,
+          "source_path": "data/raw/python_stdlib/sys.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:sys.rst#c0047",
+          "doc_id": "py-stdlib:sys.rst",
+          "module": "sys",
+          "score": 0.5515583753585815,
+          "source_path": "data/raw/python_stdlib/sys.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:pickle.rst#c0000",
+          "doc_id": "py-stdlib:pickle.rst",
+          "module": "pickle",
+          "score": 0.5469578504562378,
+          "source_path": "data/raw/python_stdlib/pickle.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:sys.rst#c0012",
+          "doc_id": "py-stdlib:sys.rst",
+          "module": "sys",
+          "score": 0.532875657081604,
+          "source_path": "data/raw/python_stdlib/sys.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:pickle.rst#c0065",
+          "doc_id": "py-stdlib:pickle.rst",
+          "module": "pickle",
+          "score": 0.5314739942550659,
+          "source_path": "data/raw/python_stdlib/pickle.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "sys",
+        "sys",
+        "pickle",
+        "sys",
+        "pickle"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: This is intended to be called from a debugger from a checkpoint, to recursively debug or profile some other code. [1] (x)`` aims to ",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": false,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": true
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "man-024",
+      "cohort": "regressed",
+      "dataset": "manual",
+      "query": "how do I do async file operations in Python?",
+      "category": "recoverable_should_clarify",
+      "expected_type": "clarify",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.615 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0000",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.615492582321167,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0001",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.5560889840126038,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:concurrent.futures.rst#c0008",
+          "doc_id": "py-stdlib:concurrent.futures.rst",
+          "module": "concurrent.futures",
+          "score": 0.5437082648277283,
+          "source_path": "data/raw/python_stdlib/concurrent.futures.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:asyncio.rst#c0002",
+          "doc_id": "py-stdlib:asyncio.rst",
+          "module": "asyncio",
+          "score": 0.5306302309036255,
+          "source_path": "data/raw/python_stdlib/asyncio.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:multiprocessing.rst#c0151",
+          "doc_id": "py-stdlib:multiprocessing.rst",
+          "module": "multiprocessing",
+          "score": 0.5092905759811401,
+          "source_path": "data/raw/python_stdlib/multiprocessing.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "asyncio",
+        "asyncio",
+        "concurrent.futures",
+        "asyncio",
+        "multiprocessing"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: :mod:`!asyncio` --- Asynchronous I/O ==================================== .. [1] io is often a perfect fit for IO-bound and high-lev",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "not_applicable",
+      "mismatch_reasons": [
+        "mismatch checks not applicable: query lacks explicit module/symbol intent"
+      ],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": true,
+        "explicit_symbol_request": false,
+        "has_stdlib_term": false,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": true
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    },
+    {
+      "id": "synv2-0012",
+      "cohort": "regressed",
+      "dataset": "synthetic",
+      "query": "In argparse, how do I use heappush exactly as documented in argparse?",
+      "category": "near_domain_should_refuse",
+      "expected_type": "refuse",
+      "predicted_type_before": "refuse",
+      "predicted_type_after": "answer",
+      "gate_decision": "answer",
+      "gate_rationale": "Strong evidence: top score 0.595 >= 0.400 and topic support is consistent (same_topic=True, support_count=5).",
+      "retrieval_top_chunks": [
+        {
+          "chunk_id": "py-stdlib:heapq.rst#c0003",
+          "doc_id": "py-stdlib:heapq.rst",
+          "module": "heapq",
+          "score": 0.5945776700973511,
+          "source_path": "data/raw/python_stdlib/heapq.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:heapq.rst#c0007",
+          "doc_id": "py-stdlib:heapq.rst",
+          "module": "heapq",
+          "score": 0.5567786693572998,
+          "source_path": "data/raw/python_stdlib/heapq.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0003",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5566645860671997,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:argparse.rst#c0056",
+          "doc_id": "py-stdlib:argparse.rst",
+          "module": "argparse",
+          "score": 0.5464438199996948,
+          "source_path": "data/raw/python_stdlib/argparse.rst"
+        },
+        {
+          "chunk_id": "py-stdlib:heapq.rst#c0006",
+          "doc_id": "py-stdlib:heapq.rst",
+          "module": "heapq",
+          "score": 0.5369953513145447,
+          "source_path": "data/raw/python_stdlib/heapq.rst"
+        }
+      ],
+      "retrieval_top_modules": [
+        "heapq",
+        "heapq",
+        "argparse",
+        "argparse",
+        "heapq"
+      ],
+      "fallback_attempted": true,
+      "fallback_used": true,
+      "generated_refusal_text_before_fallback": "I don't have enough information from the provided documentation.",
+      "fallback_answer_text": "From the Python standard library documentation: Like :meth:`list.sort`, this implementation uses only the ``<`` operator for comparisons, for both min-heaps and max-heaps. [1] ctio",
+      "citation_count_before": 0,
+      "citation_count_after": 2,
+      "citation_ids_after_from_preview": [
+        1
+      ],
+      "mismatch_subtype": "none",
+      "mismatch_reasons": [],
+      "python_general_out_of_scope_signals": [],
+      "lexical_features": {
+        "starts_explanatory": false,
+        "explicit_symbol_request": true,
+        "has_stdlib_term": true,
+        "has_third_party_tooling_terms": false,
+        "broad_or_vague_phrasing": false
+      },
+      "postgen_refusal_override_triggered": true,
+      "postgen_refusal_override_blocked": false,
+      "postgen_refusal_override_block_reasons": [
+        "generator refusal fallback applied",
+        "gate_decision=answer",
+        "generated text is refusal-like",
+        "mismatch is not hard/recoverable",
+        "strong stdlib coherence",
+        "no python-general/out-of-scope intent signals"
+      ]
+    }
+  ],
+  "contrastive_summary": {
+    "corrected": {
+      "count": 3,
+      "gate_decision_answer_pct": 100.0,
+      "fallback_used_pct": 66.7,
+      "python_general_signal_pct": 0.0,
+      "explicit_symbol_request_pct": 0.0,
+      "has_third_party_tooling_terms_pct": 0.0,
+      "starts_explanatory_pct": 100.0,
+      "same_top2_module_pct": 100.0,
+      "avg_citation_count_after": 1.667
+    },
+    "regressed": {
+      "count": 9,
+      "gate_decision_answer_pct": 100.0,
+      "fallback_used_pct": 100.0,
+      "python_general_signal_pct": 0.0,
+      "explicit_symbol_request_pct": 11.1,
+      "has_third_party_tooling_terms_pct": 11.1,
+      "starts_explanatory_pct": 55.6,
+      "same_top2_module_pct": 100.0,
+      "avg_citation_count_after": 2.0
+    }
+  },
+  "strict_eligibility_proposal": {
+    "eligibility_should_include": [
+      "Only gate_decision == 'answer' and generator refusal-like output was produced",
+      "Only in-domain explanatory queries that explicitly mention a stdlib module or symbol",
+      "Top-3 retrieval must be strongly coherent: same module for top-2 and at least 2/3 from same stdlib module",
+      "No python_general_out_of_scope_signals",
+      "Mismatch subtype must be 'not_applicable'",
+      "Must have evidence of conceptual intent (what/how/explain/overview) and no cross-domain/tooling terms"
+    ],
+    "eligibility_must_exclude": [
+      "Any explicit 'In <module>, how do I use <symbol>' near-domain symbol mismatch pattern",
+      "Queries with python-general/tooling/third-party language (install, numpy, pandas, sql, http, dataframe)",
+      "Broad, cross-cutting prompts without anchored stdlib target",
+      "Cases where retrieval coherence exists but query intent is not stdlib-documentation anchored",
+      "Any case where top evidence text does not contain a directly relevant symbol/topic match"
+    ],
+    "required_retrieval_gate_conditions": [
+      "gate_decision must be answer before any fallback consideration",
+      "mismatch_subtype must remain not_applicable",
+      "top_score should be in strong band (>= threshold_high) and support_count high",
+      "top2 modules identical and top3 includes >=2 chunks from same module"
+    ],
+    "required_metadata_debug_checks": [
+      "Log and require explicit eligibility_reasons and exclusion_reasons",
+      "Log query_intent_flags (conceptual/explanatory, explicit_symbol_request, tooling_terms)",
+      "Log module_anchor_strength (top2_same, top3_majority_module)",
+      "Abort fallback if any exclusion reason is present"
+    ],
+    "minimum_evidence_signals": [
+      "Refusal-like generated answer",
+      "Strong stdlib anchoring in query + retrieval",
+      "No out-of-scope/python-general signals",
+      "No near-domain symbol-mismatch template"
+    ]
+  },
+  "recommendation": {
+    "choice": "B",
+    "label": "fallback should continue only for a tiny conceptual in-domain slice",
+    "rationale": [
+      "The mechanism can recover true in-domain misses (man-007, man-009), but broad eligibility causes major false-answer regressions.",
+      "Regressed cases are dominated by near-domain symbol mismatch and python-general intent where same-module retrieval is misleading.",
+      "A very narrow eligibility gate is required; otherwise risk outweighs gain."
+    ]
+  },
+  "notes": [
+    "No behavior changes were made. This is forensic analysis only.",
+    "Citation ids are extracted from answer_preview where available; previews can be truncated.",
+    "Retrieval top chunks and mismatch/out-of-scope diagnostics are computed post-hoc from current index/code for forensic contrast."
+  ]
+}
