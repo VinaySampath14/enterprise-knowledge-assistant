@@ -1,6 +1,12 @@
 from pathlib import Path
 import json
 import sys
+
+# Ensure repo root is on sys.path when this file is executed directly.
+repo_root = Path(__file__).resolve().parents[2]
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
 from src.rag.pipeline import RAGPipeline
 
 
@@ -12,7 +18,7 @@ def _run_and_print(pipeline: RAGPipeline, query: str) -> None:
 
 
 def main():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     pipeline = RAGPipeline(repo_root)
 
     args = sys.argv[1:]

@@ -1,359 +1,273 @@
 # Enterprise Knowledge Assistant
 
-A production-ready **RAG (Retrieval-Augmented Generation)** system that answers questions about Python standard library documentation with confidence-gated responses. Built for scalability, enterprise deployments, and AI/ML positions.
+Enterprise Knowledge Assistant is a retrieval-augmented generation (RAG) service for Python standard library documentation.
 
-**Status**: Ready for deployment | **Python Version**: 3.11+ | **License**: MIT
+It combines:
+- FAISS-based dense retrieval over processed Python stdlib docs
+- A deterministic confidence gate that decides `answer`, `clarify`, or `refuse`
+- GPT-4o-mini generation for grounded answers with citations
+- FastAPI endpoints for query, health, and aggregate stats
 
----
+## Current State
 
-## 🎯 What This Does
+Implemented today:
+- Rule-based mismatch detection in the confidence gate (module hints, symbol checks, topic consistency)
+- Lexical groundedness overlap metric in legacy evaluation
+- Threshold calibration and synthetic evaluation scripts
 
-An intelligent Q&A system that:
-- **Retrieves** relevant documentation chunks using FAISS vector similarity search
-- **Gates** responses with a confidence classifier (refuse → clarify → answer)
-- **Generates** grounded answers using GPT-4o-mini
-- **Logs** all queries with metrics for continuous improvement
-- **Exposes** results via a REST API with request tracing
+Not fully wired yet:
+- Request-time query logging from `POST /query` into `logs/queries.jsonl`
+- `GET /stats` aggregates only what is present in the log file
 
-**Real example:**
-```
-Query: "How do I read a JSON file?"
-Response: "Use json.load() with open(). Here's the relevant documentation..."
-Source: Python stdlib docs (json module)
-Confidence: high
-```
+## Architecture
 
----
-
-## 🏗️ System Architecture
-
-### High-Level Flow
+### Inference Flow
 
 ```mermaid
 graph LR
-    A["User Query"] -->|HTTP POST| B["FastAPI Server"]
-    B --> C["Query Logger"]
-    B --> D["Retriever\n(FAISS Index)"]
-    D --> E["Embedding\n(Sentence-Transformer)"]
-    E --> F["Top-K Chunks\n(top_k=5)"]
-    F --> G["Confidence Gate"]
-    G -->|Low Confidence| H["Refuse Response"]
-    G -->|Medium Confidence| I["Clarify Response"]
-    G -->|High Confidence| J["Generator\n(GPT-4o-mini)"]
-    J --> K["LLM Answer"]
-    H --> L["JSON Response\n+ Sources + Metadata"]
-    I --> L
-    K --> L
-    L -->|HTTP 200| M["Client"]
-    
-    style A fill:#e1f5ff
-    style B fill:#fff3e0
-    style D fill:#f3e5f5
-    style G fill:#fce4ec
-    style J fill:#c8e6c9
-    style L fill:#ffe0b2
+    Q[User Query] --> R[Retriever]
+    R --> G[Confidence Gate]
+    G -->|refuse| X[Refuse Text]
+    G -->|clarify| C[Clarify Text]
+    G -->|answer| LLM[Generator GPT-4o-mini]
+    LLM --> A[Answer + Citation Markers]
+    X --> O[JSON Response]
+    C --> O
+    A --> O
 ```
 
-### Component Details
+### Data Build Flow
 
 ```mermaid
-graph TB
-    subgraph "Data Pipeline"
-        RawDocs["Raw Docs\n(28 Python stdlib)"]
-        Chunking["Chunking\n(800 chars, 150 overlap)"]
-        Embedding["Embedding\n(all-MiniLM-L6-v2)"]
-        FAISS["FAISS Index\n+ Metadata Store"]
-        
-        RawDocs -->|scripts/build_docs.py| Chunking
-        Chunking -->|scripts/build_chunks.py| Embedding
-        Embedding -->|scripts/build_index.py| FAISS
-    end
-    
-    subgraph "Inference Pipeline"
-        Query["User Query"]
-        Retriever["Retriever"]
-        ConfidenceGate["Confidence Gate"]
-        Generator["Generator"]
-        
-        Query --> Retriever
-        Retriever --> ConfidenceGate
-        ConfidenceGate -->|decision=answer| Generator
-        ConfidenceGate -->|decision!=answer| Response["Return Decision"]
-    end
-    
-    subgraph "API & Logging"
-        API["REST API\n/health, /query"]
-        QueryLog["Query Logger\n(queries.jsonl)"]
-        Eval["Evaluation\n(metrics.py)"]
-        
-        API --> QueryLog
-        QueryLog --> Eval
-    end
-    
-    FAISS -.->|load at startup| Retriever
-    Generator --> API
-    Response --> API
-    
-    style FAISS fill:#f3e5f5
-    style Query fill:#e1f5ff
-    style API fill:#fff3e0
-    style Eval fill:#fce4ec
+graph LR
+    RAW[data/raw/python_stdlib/*.rst] --> D[scripts/build_docs.py]
+    D --> DOCS[data/processed/docs.jsonl]
+    DOCS --> CH[scripts/build_chunks.py]
+    CH --> CHUNKS[data/processed/chunks.jsonl]
+    CHUNKS --> IDX[scripts/build_index.py]
+    IDX --> FAISS[indexes/faiss.index + indexes/meta.jsonl]
 ```
 
-### Confidence Gate Decision Logic
+## Repository Layout
 
-```mermaid
-graph TD
-    A["Retrieved Hits\n(score_1, score_2, ...)"] -->|score_1 >= 0.40| B["High Confidence"]
-    A -->|0.25 <= score_1 < 0.40| C["Check Topic Consistency"]
-    A -->|score_1 < 0.25| D["Low Confidence"]
-    
-    B --> E["Decision: ANSWER\n(Pass to Generator)"]
-    C -->|Same module/doc| E
-    C -->|Different topics| F["Decision: CLARIFY\n(Ask for refinement)"]
-    D --> G["Decision: REFUSE\n(Not in corpus)"]
-    
-    style B fill:#c8e6c9
-    style E fill:#c8e6c9
-    style F fill:#fff9c4
-    style G fill:#ffccbc
-```
-
----
-
-## 📊 Project Structure
-
-```
+```text
 enterprise-knowledge-assistant/
-├── README.md                          # This file
-├── config.yaml                        # System configuration
-├── requirements.txt                   # Python dependencies
-├── docker-compose.yml                 # Local dev environment
-├── Dockerfile                         # Container image
-│
-├── data/
-│   ├── raw/python_stdlib/            # 28 Python stdlib RST docs
-│   ├── processed/
-│   │   ├── chunks.jsonl              # Split documents (29K chunks)
-│   │   └── docs.jsonl                # Document metadata
-│   └── schema.md                      # Data format documentation
-│
-├── indexes/
-│   ├── faiss.index                   # Vector index (1M+ vectors)
-│   └── meta.jsonl                    # Chunk metadata
-│
-├── src/
-│   ├── api/                          # FastAPI server
-│   │   ├── main.py                   # Endpoints & app creation
-│   │   ├── schemas.py                # Request/response Pydantic models
-│   │   └── deps.py                   # Dependency injection
-│   │
-│   ├── rag/                          # RAG pipeline
-│   │   ├── pipeline.py               # Main orchestrator (Retrieval→Gate→Generate)
-│   │   ├── confidence.py             # Confidence gating logic
-│   │   ├── generator.py              # LLM call (GPT-4o-mini)
-│   │   └── prompt.py                 # Prompt templates
-│   │
-│   ├── retrieval/                    # Vector search
-│   │   ├── retriever.py              # FAISS search logic
-│   │   └── faiss_store.py            # Index loading
-│   │
-│   ├── embeddings/                   # Text encoding
-│   │   └── embedder.py               # Sentence-transformers wrapper
-│   │
-│   ├── chunking/                     # Document processing
-│   │   └── splitter.py               # Text splitting logic
-│   │
-│   ├── eval_runner/                  # Evaluation framework
-│   │   ├── run_eval.py               # Run evaluation pipeline
-│   │   └── metrics.py                # EM, BLEU, token overlap
-│   │
-│   ├── monitoring/                   # Observability
-│   │   └── stats.py                  # Performance metrics
-│   │
-│   ├── ingest/                       # Data loading
-│   │   └── load_raw.py               # Parse RST docs
-│   │
-│   ├── utils/
-│   │   ├── loggers.py                # Structured logging
-│   │   ├── query_logger.py           # Query event logging
-│   │   ├── timing.py                 # Latency measurement
-│   │   └── jsonl.py                  # JSONL I/O utilities
-│   │
-│   └── config.py                     # Configuration loader
-│
-├── scripts/
-│   ├── build_docs.py                 # Load raw documentation
-│   ├── build_chunks.py               # Create chunks
-│   ├── build_index.py                # Build FAISS index
-│   ├── query_pipeline.py             # Test pipeline end-to-end
-│   ├── query_retrieve.py             # Test retrieval only
-│   ├── query_gate.py                 # Test gate only
-│   ├── validate_*.py                 # Data validation scripts
-│   ├── run_eval.py                   # Run evaluation
-│   └── run_api.bat                   # Start API server (Windows)
-│
-├── eval/
-│   ├── questions.jsonl               # Evaluation dataset
-│   ├── results.jsonl                 # Predictions
-│   ├── report.json                   # Metrics summary
-│   └── report.md                     # Human-readable report
-│
-├── logs/
-│   └── queries.jsonl                 # Query event log
-│
-└── tests/
-    ├── conftest.py                   # Pytest fixtures
-    ├── test_api_contract.py          # API endpoint tests
-    ├── test_confidence.py            # Confidence gate tests
-    ├── test_generator_smoke.py       # LLM integration test
-    ├── test_index_artifacts.py       # Index integrity tests
-    ├── test_ingest.py                # Data loading tests
-    ├── test_prompt.py                # Prompt formatting tests
-    ├── test_retriever.py             # Retrieval logic tests
-    └── test_splitter.py              # Chunking logic tests
+  config.yaml
+  requirements.txt
+  src/
+    api/
+    rag/
+    retrieval/
+    embeddings/
+    chunking/
+    ingest/
+    eval_runner/
+    monitoring/
+    utils/
+  scripts/
+    build_docs.py
+    build_chunks.py
+    build_index.py
+    validate_docs.py
+    validate_chunks.py
+    validate_index.py
+    validate_eval.py
+    run_eval.py
+    debug/
+    experiments/
+  data/
+    raw/python_stdlib/
+    processed/
+  indexes/
+  eval/
+  eval_v2/
+  tests/
 ```
 
----
+## Requirements
 
-## 🚀 Quick Start
-
-### Prerequisites
 - Python 3.11+
-- OpenAI API key (for generation)
-- ~500MB disk space (FAISS index)
+- OpenAI API key when generation is enabled (`config.yaml -> generation.enabled: true`)
 
-### Installation
+## Quick Start (Local)
+
+### 1) Create environment and install deps
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/enterprise-knowledge-assistant
-cd enterprise-knowledge-assistant
+python -m venv .venv
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+# macOS/Linux
+# source .venv/bin/activate
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Set up environment
-echo "OPENAI_API_KEY=sk-..." > .env
 ```
 
-### Run the API
+### 2) Set API key
+
+```powershell
+$env:OPENAI_API_KEY="sk-..."
+```
+
+### 3) Ensure index artifacts exist
+
+If you already have these files, you can skip rebuild:
+- `indexes/faiss.index`
+- `indexes/meta.jsonl`
+
+Validation commands:
 
 ```bash
-# Start server (http://localhost:8000)
+python scripts/validate_docs.py
+python scripts/validate_chunks.py
+python scripts/validate_index.py
+```
+
+If validation fails or artifacts are missing, rebuild in order:
+
+```bash
+python scripts/build_docs.py
+python scripts/build_chunks.py
+python scripts/build_index.py
+```
+
+### 4) Run API
+
+```bash
 python -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
-
-# Health check
-curl http://localhost:8000/health
-
-# Query example
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "How do I read JSON files in Python?"}'
 ```
 
-### Docker
+### 5) Smoke check
 
 ```bash
-# Build image
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/query -H "Content-Type: application/json" -d '{"query":"How do I read JSON files in Python?"}'
+```
+
+## Docker
+
+```bash
 docker build -t enterprise-knowledge-assistant:latest .
-
-# Run container (required env var)
 docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... enterprise-knowledge-assistant:latest
-
-# Optional: persist query logs to host
-docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... -v ${PWD}/logs:/app/logs enterprise-knowledge-assistant:latest
-
-# Health check
-curl http://localhost:8000/health
-
-# Stats check
-curl http://localhost:8000/stats
 ```
 
-Required environment variables:
-- OPENAI_API_KEY: OpenAI API key used by the generator.
+Compose:
 
-Optional local compose run:
 ```bash
-# Uses docker-compose.yml (expects OPENAI_API_KEY in shell/.env)
 docker compose up --build
 ```
 
----
-
-## 📡 API Documentation
+## API Reference
 
 ### POST `/query`
 
-**Request:**
+Request body:
+
 ```json
 {
-  "query": "How do I handle exceptions in Python?",
-  "request_id": "optional-uuid"
+  "query": "How do I open a sqlite3 connection?"
 }
 ```
 
-**Response:**
+Optional request header:
+- `X-Request-ID`: caller-provided request id (UUID is auto-generated if omitted)
+
+Response shape (from `src/api/schemas.py`):
+
 ```json
 {
-  "request_id": "abc-123",
-  "query": "How do I handle exceptions in Python?",
-  "answer": "Use try/except blocks. The try block contains code...",
-  "result_type": "answer",
-  "confidence": 0.52,
+  "type": "answer",
+  "answer": "Use sqlite3.connect(path) to open a connection [1].",
+  "confidence": 0.56,
   "sources": [
     {
-      "chunk_id": "chunk_001",
-      "module": "builtins",
-      "text": "except ExceptionType:\n    handle error",
-      "score": 0.52
+      "chunk_id": "sqlite3_001_004",
+      "doc_id": "sqlite3",
+      "module": "sqlite3",
+      "score": 0.56,
+      "source_path": "data/raw/python_stdlib/sqlite3.rst"
     }
   ],
-  "latency_ms": {
-    "retrieval": 45,
-    "generation": 890,
-    "total": 950
+  "citations": [
+    {
+      "id": 1,
+      "chunk_id": "sqlite3_001_004",
+      "doc_id": "sqlite3",
+      "module": "sqlite3",
+      "source_path": "data/raw/python_stdlib/sqlite3.rst",
+      "heading": "sqlite3.connect",
+      "start_char": 120,
+      "end_char": 480,
+      "score": 0.56
+    }
+  ],
+  "meta": {
+    "top_score": 0.56,
+    "retrieved_k": 5,
+    "latency_ms_total": 940.2,
+    "latency_ms_retrieval": 42.3,
+    "latency_ms_generation": 881.1,
+    "request_id": "6d44d6b1-9f10-45f7-b7fb-c37613d8c1ef"
   }
 }
 ```
 
-**Result Types:**
-- `answer`: High-confidence response with sources
-- `clarify`: Ambiguous query, ask user for refinement
-- `refuse`: Not in documentation, cannot answer
+Result types:
+- `answer`: strong evidence, generation returned a usable answer
+- `clarify`: medium confidence or recoverable mismatch
+- `refuse`: weak evidence, hard mismatch, or post-generation refusal override
 
 ### GET `/health`
+
+Current response shape:
 
 ```json
 {
   "status": "ok",
-  "components": {
-    "index_loaded": true,
-    "embeddings_model": "sentence-transformers/all-MiniLM-L6-v2",
-    "version": "0.1.0"
-  }
+  "service": "enterprise-knowledge-assistant",
+  "timestamp": "2026-03-28T11:00:00+00:00",
+  "pipeline_loaded": true,
+  "dependencies": {
+    "retriever_loaded": true,
+    "gate_loaded": true,
+    "generator_loaded": true
+  },
+  "startup_errors": []
 }
 ```
 
----
+If startup checks fail, `status` becomes `degraded`, `pipeline_loaded` is `false`, and `startup_errors` contains details.
 
-## ⚙️ Configuration
+### GET `/stats`
 
-Edit `config.yaml`:
+`/stats` computes aggregates from `logs/queries.jsonl` if present.
+
+Returned fields:
+- `total_queries`
+- `type_counts` (`answer`, `clarify`, `refuse`)
+- `avg_confidence`
+- `avg_top_score`
+- `avg_latency_ms_total`
+- `avg_latency_ms_retrieval`
+- `avg_latency_ms_generation`
+- `avg_num_sources`
+- `avg_groundedness_overlap`
+- `answer_only_avg_groundedness_overlap`
+
+Important: API query handling does not currently append records to this log automatically.
+
+## Configuration
+
+`config.yaml` defaults:
 
 ```yaml
 chunking:
-  chunk_size: 800        # Characters per chunk
-  overlap: 150          # Overlap between chunks
+  chunk_size: 800
+  overlap: 150
 
 embeddings:
   model_name: "sentence-transformers/all-MiniLM-L6-v2"
-  normalize: true       # Cosine similarity
+  normalize: true
   batch_size: 64
 
 index:
@@ -361,161 +275,100 @@ index:
   meta_path: "indexes/meta.jsonl"
 
 retrieval:
-  top_k: 5              # How many chunks to retrieve
+  top_k: 5
 
 confidence:
-  threshold_high: 0.40  # Definitely answer
-  threshold_low: 0.25   # Definitely refuse
-  margin_min: 0.03      # Score margin between top hits
-
-generation:
-  model: "gpt-4o-mini"
-  temperature: 0.0      # Deterministic (not creative)
+  threshold_high: 0.40
+  threshold_low: 0.25
+  margin_min: 0.03
 
 logging:
   enabled: true
   path: "logs/queries.jsonl"
+
+generation:
+  enabled: true
+  model: "gpt-4o-mini"
+  temperature: 0.0
 ```
 
----
+Notes:
+- `margin_min` applies when top hits compete across different topics, not as a global score cutoff.
+- If `generation.enabled` is `true`, startup requires `OPENAI_API_KEY`.
 
-## 🧪 Testing
+## Testing
+
+Run all tests:
 
 ```bash
-# Run all tests
-pytest tests/
+pytest tests/ -v
+```
 
-# Run specific test file
+Run selected suites:
+
+```bash
 pytest tests/test_retriever.py -v
-
-# With coverage
-pytest tests/ --cov=src --cov-report=html
-
-# Run only fast tests (skip LLM)
-pytest tests/ -m "not llm"
+pytest tests/test_confidence.py -v
+pytest tests/test_index_artifacts.py -v
 ```
 
-### Test Coverage
-- **Retrieval**: FAISS indexing, similarity scoring
-- **Confidence Gate**: Decision logic for refuse/clarify/answer
-- **Generator**: Prompt formatting, LLM integration
-- **API**: FastAPI endpoints, request validation
-- **Data**: Chunking, embeddings, JSONL I/O
-
----
-
-## 📈 Evaluation
+LLM smoke test (skips automatically when `OPENAI_API_KEY` is not set):
 
 ```bash
-# Run evaluation on test set
+pytest tests/test_generator_smoke.py -v
+```
+
+Test prerequisites:
+- Raw docs under `data/raw/python_stdlib/`
+- Processed docs/chunks and index/meta artifacts in expected locations
+
+## Evaluation
+
+### Legacy fixed-path evaluation
+
+```bash
 python scripts/run_eval.py
-
-# Output: eval/report.md with metrics
-# - Exact Match (EM): % of perfect answers
-# - BLEU: n-gram overlap with gold answers
-# - Token Overlap: F1 score
 ```
 
-Example report:
-```
-=== Evaluation Report ===
-Total Questions: 100
-Answers Generated: 95
-Refused: 5
+This path expects `eval/questions.jsonl`. That file is not currently present in this repository snapshot.
 
-Metrics:
-- Exact Match:    34.7%
-- BLEU Score:     0.61
-- Token F1:       0.68
-- Avg Confidence: 0.51
+### Active dataset evaluations
 
-High-Confidence Answers (≥0.40):
-  - EM:       52.0%
-  - BLEU:     0.73
-
-Low-Confidence Answers (<0.25):
-  - Refused:  100%
-```
-
----
-
-## 📝 Query Logging
-
-All queries logged to `logs/queries.jsonl`:
-
-```json
-{
-  "request_id": "abc-123",
-  "timestamp": "2026-03-20T10:30:45Z",
-  "query": "How do I read JSON?",
-  "result_type": "answer",
-  "confidence": 0.52,
-  "latency_ms": 950,
-  "top_module": "json",
-  "model": "gpt-4o-mini"
-}
-```
-
-Use for:
-- Identifying common failure patterns
-- Analyzing latency trends
-- Improving confidence thresholds
-- Cost tracking
-
----
-
-## 🔧 Development Workflow
-
-### Adding a New Feature
-
-1. **Create a test first** (TDD):
-   ```bash
-   touch tests/test_my_feature.py
-   ```
-
-2. **Implement feature**:
-   ```bash
-   # Edit src/module/file.py
-   python -m pytest tests/test_my_feature.py
-   ```
-
-3. **Lint and format**:
-   ```bash
-   black src/
-   isort src/
-   pylint src/
-   ```
-
-4. **Commit**:
-   ```bash
-   git add .
-   git commit -m "feat: add my feature"
-   ```
-
-### Common Tasks
+Manual dataset in repo:
 
 ```bash
-# Rebuild FAISS index (after changing docs)
-python scripts/build_docs.py
-python scripts/build_chunks.py
-python scripts/build_index.py
-
-# Quick pipeline test
-python scripts/query_pipeline.py --query "Your question here"
-
-# Validate data integrity
-python scripts/validate_docs.py
-python scripts/validate_chunks.py
-python scripts/validate_index.py
+python scripts/experiments/run_eval_v2_synthetic.py --dataset eval/manual.jsonl --results eval/manual_results.jsonl --summary eval/manual_summary.json --category-field category --expected-type-field expected_type
 ```
 
+Synthetic refined dataset in repo:
 
----
+```bash
+python scripts/experiments/run_eval_v2_synthetic.py --dataset eval_v2/synthetic_scaffold_dataset_refined.jsonl --results eval_v2/synthetic_refined_results.jsonl --summary eval_v2/synthetic_refined_summary.json --category-field refined_category --expected-type-field expected_type_refined
+```
 
-## 📄 License
+## Debug Scripts
 
-MIT License - See [LICENSE](LICENSE) file
+Useful local diagnostics:
 
+```bash
+python scripts/debug/query_retrieve.py "How do I parse command line arguments?"
+python scripts/debug/query_gate.py "How do I parse command line arguments?"
+python scripts/debug/query_pipeline.py "How do I parse command line arguments?"
+```
 
+## Troubleshooting
 
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| API starts as degraded | Missing index/meta or missing API key | Build index artifacts and set `OPENAI_API_KEY` |
+| `POST /query` returns 502 | Upstream generation provider failed | Check API key, model access, network, provider status |
+| `POST /query` returns 400 | Empty/whitespace query | Send non-empty query text |
+| `POST /query` often returns `refuse` | Query out-of-corpus or mismatch detection triggered | Ask module-specific query; inspect retrieval/gate debug scripts |
+| `/stats` is mostly zeros | Log file missing or empty | Generate/populate log records; current API path does not auto-log |
+| Index validation fails | Artifact misalignment | Rebuild in order: docs -> chunks -> index |
 
+## Notes for Contributors
+
+- Prefer validating artifacts before running full tests.
+- Keep README examples aligned with `src/api/schemas.py` and `src/api/main.py` when API fields change.
+- If query logging is wired into API in future, update `/stats` caveat in this README.

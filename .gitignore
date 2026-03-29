@@ -16,6 +16,19 @@ data/processed/
 indexes/
 logs/
 models/cache/
+eval/results.jsonl
+eval/report.json
+eval/report.md
+eval/diagnostic_citation_signal_results.jsonl
+eval/diagnostic_citation_signal_summary.json
+eval/diagnostic_refined_results.jsonl
+eval_v2/synthetic_results.jsonl
+eval_v2/synthetic_summary.json
+eval_v2/synthetic_refined_results.jsonl
+eval_v2/synthetic_scaffold_summary.json
+eval_v2/near_domain_diversification_results.jsonl
+eval_v2/near_domain_diversification_summary.json
+artifacts/archive/
 
 # OS / IDE
 .DS_Store

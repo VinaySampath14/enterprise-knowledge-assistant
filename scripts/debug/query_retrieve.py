@@ -5,6 +5,11 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 
+# Ensure repo root is on sys.path when this file is executed directly.
+repo_root = Path(__file__).resolve().parents[2]
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
 from sympy import preview
 
 from src.retrieval.retriever import Retriever
@@ -12,7 +17,7 @@ from src.rag.prompt import format_retrieved_chunks
 
 
 def main() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     r = Retriever(repo_root)
 
     query = " ".join(sys.argv[1:]).strip()
