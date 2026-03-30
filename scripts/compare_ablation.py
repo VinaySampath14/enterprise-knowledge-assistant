@@ -106,9 +106,12 @@ def _version_sort_key(version: str) -> Tuple[int, int, int, str]:
         return (1, major, suffix_ord, v)
 
     # Then stepN_hM style versions.
-    m_step = re.search(r"(?:^|[_\-])step(\d+)(?:$|[_\-])", v)
+    m_step = re.search(r"(?:^|[_\-])step(\d+)([a-z]?)(?:$|[_\-])", v)
     if m_step:
-        return (2, int(m_step.group(1)), 0, v)
+        major = int(m_step.group(1))
+        suffix = m_step.group(2)
+        suffix_ord = (ord(suffix) - ord("a") + 1) if suffix else 0
+        return (2, major, suffix_ord, v)
 
     # Fallback alphabetical.
     return (3, 9999, 0, v)
@@ -236,9 +239,12 @@ def _autofill_phase_gate_from_mlflow(
         verdict = str(tags.get("promotion_recommendation") or "").strip().upper()
 
         row = rows[version]
-        if verdict:
+        existing_verdict = str(row.get("gate_verdict") or "").strip().upper()
+        existing_run_id = str(row.get("run_id") or "").strip()
+
+        if verdict and existing_verdict in {"", "-"}:
             row["gate_verdict"] = verdict
-        if run_id:
+        if run_id and existing_run_id in {"", "-"}:
             row["run_id"] = run_id
 
         seen_versions.add(version)

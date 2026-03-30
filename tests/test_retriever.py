@@ -4,9 +4,9 @@ import math
 from src.retrieval.retriever import Retriever, RetrievedChunk
 
 
-def _fake_chunk(module: str, text: str, score: float) -> RetrievedChunk:
+def _fake_chunk(module: str, text: str, score: float, *, chunk_id: str | None = None) -> RetrievedChunk:
     return RetrievedChunk(
-        chunk_id=f"{module}-{score}",
+        chunk_id=chunk_id or f"{module}-{score}",
         doc_id=f"doc-{module}",
         module=module,
         score=score,
@@ -60,3 +60,55 @@ def test_symbol_rerank_prefers_symbol_hit_even_if_raw_score_lower():
     ranked = Retriever._symbol_rerank(hits, "What practical job does itertools.chain solve?")
 
     assert ranked[0].module == "itertools"
+
+
+def test_rrf_fuse_prefers_items_present_in_both_rankers():
+    dense_hits = [
+        _fake_chunk("collections", "collections.Counter counts frequencies", 0.91, chunk_id="shared"),
+        _fake_chunk("itertools", "itertools.chain links iterables", 0.89, chunk_id="dense_only"),
+    ]
+
+    bm25_hits = [
+        _fake_chunk("itertools", "itertools.chain links iterables", 8.0, chunk_id="bm25_only"),
+        _fake_chunk("collections", "collections.Counter counts frequencies", 7.5, chunk_id="shared"),
+    ]
+
+    fused = Retriever._rrf_fuse(
+        dense_hits,
+        bm25_hits,
+        rrf_k=60,
+        dense_weight=1.0,
+        bm25_weight=1.0,
+    )
+
+    assert fused[0].chunk_id == "shared"
+
+
+def test_rrf_fuse_respects_channel_weights():
+    dense_hits = [
+        _fake_chunk("collections", "collections.Counter counts frequencies", 0.91, chunk_id="dense_best"),
+        _fake_chunk("itertools", "itertools.chain links iterables", 0.89, chunk_id="dense_second"),
+    ]
+
+    bm25_hits = [
+        _fake_chunk("itertools", "itertools.chain links iterables", 8.0, chunk_id="bm25_best"),
+        _fake_chunk("collections", "collections.Counter counts frequencies", 7.5, chunk_id="bm25_second"),
+    ]
+
+    dense_weighted = Retriever._rrf_fuse(
+        dense_hits,
+        bm25_hits,
+        rrf_k=60,
+        dense_weight=2.0,
+        bm25_weight=0.2,
+    )
+    bm25_weighted = Retriever._rrf_fuse(
+        dense_hits,
+        bm25_hits,
+        rrf_k=60,
+        dense_weight=0.2,
+        bm25_weight=2.0,
+    )
+
+    assert dense_weighted[0].chunk_id == "dense_best"
+    assert bm25_weighted[0].chunk_id == "bm25_best"

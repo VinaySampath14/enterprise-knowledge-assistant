@@ -22,5 +22,24 @@
   "step6_h4_symbol_retrieval": {
     "what_changed": "Retrieval rerank for explicit dotted symbols",
     "notes": "Current champion: improves manual and drops false-refusal to 0.0303"
+  },
+  "step7_h5_citation_retry": {
+    "what_changed": "Citation-retry post-generation experiment",
+    "notes": "No material improvement vs champion; not retained"
+  },
+  "step8_hybrid_rrf": {
+    "what_changed": "Hybrid retrieval (initial RRF scoring)",
+    "gate_verdict": "NO-GO",
+    "notes": "Rejected: RRF score scale mismatched confidence thresholds, causing near-universal refusals"
+  },
+  "step8b_hybrid_rrf_calibrated": {
+    "what_changed": "Hybrid retrieval (RRF ranking + dense-scale confidence score)",
+    "gate_verdict": "HOLD",
+    "notes": "Validated fix and safety recovery to parity with champion; no net uplift vs best run, so not promoted"
+  },
+  "step10_reranker_cross_encoder": {
+    "what_changed": "Cross-encoder reranker after retrieval (ms-marco-MiniLM-L-6-v2)",
+    "gate_verdict": "GO",
+    "notes": "Improves champion on manual (0.7273 -> 0.7576), holdout (0.7000 -> 0.7500), and false-refusal (0.0303 -> 0.0000) with synthetic unchanged"
   }
 }

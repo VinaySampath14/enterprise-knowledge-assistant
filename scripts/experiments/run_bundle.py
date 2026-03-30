@@ -34,7 +34,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--metadata-file",
-        default="artifacts/baselines/ablation_metadata.example.json",
+        default="artifacts/baselines/ablation_metadata.json",
         help="Optional metadata file for comparison table enrichment.",
     )
     parser.add_argument(

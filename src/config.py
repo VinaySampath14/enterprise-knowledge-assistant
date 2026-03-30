@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Literal, Optional, Tuple
 
 from pydantic import BaseModel
 import yaml
@@ -29,6 +29,17 @@ class IndexConfig(BaseModel):
 
 class RetrievalConfig(BaseModel):
     top_k: int = 5
+    mode: Literal["dense", "bm25", "hybrid"] = "dense"
+    hybrid_rrf_k: int = 60
+    hybrid_dense_weight: float = 1.0
+    hybrid_bm25_weight: float = 1.0
+
+
+class RerankerConfig(BaseModel):
+    enabled: bool = False
+    model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    candidate_k: int = 12
+    max_length: int = 256
 
 
 class ConfidenceConfig(BaseModel):
@@ -53,6 +64,7 @@ class AppConfig(BaseModel):
     embeddings: EmbeddingsConfig
     index: IndexConfig
     retrieval: RetrievalConfig
+    reranker: RerankerConfig = RerankerConfig()
     confidence: ConfidenceConfig
     logging: LoggingConfig
     generation: GenerationConfig

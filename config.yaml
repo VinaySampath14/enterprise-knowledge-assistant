@@ -1,34 +1,32 @@
-# =========================================
-# Enterprise Knowledge Assistant - Config
-# =========================================
-
 chunking:
   chunk_size: 800
   overlap: 150
-
 embeddings:
-  model_name: "sentence-transformers/all-MiniLM-L6-v2"
-  normalize: true        # normalize embeddings for cosine similarity
-  batch_size: 64         # embedding batch size
-
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  normalize: true
+  batch_size: 64
 index:
-  index_path: "indexes/faiss.index"
-  meta_path: "indexes/meta.jsonl"
-
+  index_path: indexes/faiss.index
+  meta_path: indexes/meta.jsonl
 retrieval:
   top_k: 5
-
+  mode: dense
+  hybrid_rrf_k: 60
+  hybrid_dense_weight: 1.0
+  hybrid_bm25_weight: 1.0
+reranker:
+  enabled: false
+  model_name: cross-encoder/ms-marco-MiniLM-L-6-v2
+  candidate_k: 12
+  max_length: 256
 confidence:
-  threshold_high: 0.40
+  threshold_high: 0.4
   threshold_low: 0.25
   margin_min: 0.03
-
 logging:
   enabled: true
-  path: "logs/queries.jsonl"
- 
-
+  path: logs/queries.jsonl
 generation:
   enabled: true
-  model: "gpt-4o-mini"
+  model: gpt-4o-mini
   temperature: 0.0

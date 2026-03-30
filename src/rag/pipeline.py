@@ -7,7 +7,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, Any, List
 
+from src.config import load_app_config
 from src.retrieval.retriever import Retriever
+from src.retrieval.cross_encoder_reranker import CrossEncoderReranker
 from src.rag.confidence import ConfidenceGate
 from src.rag.generator import Generator
 from src.rag.intent import classify_query_intent, should_refuse_upstream
@@ -217,7 +219,9 @@ def _should_block_post_generation_refusal_override(
 class RAGPipeline:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
+        self.cfg, _ = load_app_config(repo_root)
         self.retriever = Retriever(repo_root)
+        self.reranker = CrossEncoderReranker(repo_root)
         self.gate = ConfidenceGate(repo_root)
         self.generator = Generator(repo_root)
 
@@ -261,7 +265,9 @@ class RAGPipeline:
 
         # --- Retrieval ---
         t_retrieval_start = time.perf_counter()
-        hits = self.retriever.retrieve(query)
+        retrieval_k = self.reranker.candidate_k if self.reranker.enabled else None
+        hits = self.retriever.retrieve(query, top_k=retrieval_k)
+        hits = self.reranker.rerank(query, hits, top_k=int(self.cfg.retrieval.top_k))
         t_retrieval_end = time.perf_counter()
 
         decision = self.gate.decide(hits, query=query)
