@@ -21,7 +21,7 @@
   },
   "step6_h4_symbol_retrieval": {
     "what_changed": "Retrieval rerank for explicit dotted symbols",
-    "notes": "Current champion: improves manual and drops false-refusal to 0.0303"
+    "notes": "Champion at v5: manual quality improved and false-refusal dropped to 0.0303"
   },
   "step7_h5_citation_retry": {
     "what_changed": "Citation-retry post-generation experiment",
@@ -40,6 +40,23 @@
   "step10_reranker_cross_encoder": {
     "what_changed": "Cross-encoder reranker after retrieval (ms-marco-MiniLM-L-6-v2)",
     "gate_verdict": "GO",
-    "notes": "Improves champion on manual (0.7273 -> 0.7576), holdout (0.7000 -> 0.7500), and false-refusal (0.0303 -> 0.0000) with synthetic unchanged"
+    "run_id": "8040794c517646a1b9ffec49d7114707",
+    "notes": "Champion moved v5 -> v9: always-on reranking raised manual and holdout while maintaining safety pass"
+  },
+  "step10_reranker_cross_encoder_r1": {
+    "what_changed": "Conditional cross-encoder reranking enabled (low_margin_only, threshold 0.05); rerank applies only on low-confidence retrieval margins",
+    "notes": "Validation run to compare selective reranking against always-on reranker baseline"
+  },
+  "step10_conditional_t015": {
+    "what_changed": "Conditional cross-encoder reranking threshold sweep candidate (low_margin_only, threshold 0.15)",
+    "notes": "Champion moved v9 -> v11: threshold 0.15 preserved quality and improved latency"
+  },
+  "step11_eval_hardening": {
+    "what_changed": "Lock-in confirmation run for conditional reranking champion (low_margin_only, threshold 0.15)",
+    "notes": "Final full-pass confirmation run before freezing this cycle"
+  },
+  "step11_eval_hardening_metrics": {
+    "what_changed": "Eval hardening: added heuristic faithfulness and answer-relevancy metrics (evaluation-only)",
+    "notes": "Guardrails unchanged; side-by-side validation confirms core safety/accuracy parity while exposing new hardening signals"
   }
 }

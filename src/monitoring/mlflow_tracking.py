@@ -69,6 +69,13 @@ def log_eval_tracking(
         top_level_metrics = {
             "overall_accuracy": summary.get("overall_accuracy"),
             "total_queries": summary.get("total_queries"),
+            "total_answer_predictions": summary.get("total_answer_predictions"),
+            "avg_faithfulness": summary.get("avg_faithfulness"),
+            "avg_answer_relevancy": summary.get("avg_answer_relevancy"),
+            "avg_faithfulness_answer_only": summary.get("avg_faithfulness_answer_only"),
+            "avg_answer_relevancy_answer_only": summary.get("avg_answer_relevancy_answer_only"),
+            "avg_faithfulness_all_predictions": summary.get("avg_faithfulness_all_predictions"),
+            "avg_answer_relevancy_all_predictions": summary.get("avg_answer_relevancy_all_predictions"),
         }
         for k, v in top_level_metrics.items():
             num = _to_number(v)

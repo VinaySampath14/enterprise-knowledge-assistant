@@ -1,0 +1,82 @@
+{
+  "ablation_version": "step11_eval_hardening_metrics",
+  "input_files": [
+    "C:\\Users\\Vinay\\OneDrive\\Desktop\\enterprise-knowledge-assistant\\eval\\step11_eval_hardening_metrics_manual_results.jsonl",
+    "C:\\Users\\Vinay\\OneDrive\\Desktop\\enterprise-knowledge-assistant\\eval_v2\\step11_eval_hardening_metrics_synthetic_results.jsonl",
+    "C:\\Users\\Vinay\\OneDrive\\Desktop\\enterprise-knowledge-assistant\\eval\\step11_eval_hardening_metrics_holdout_results.jsonl"
+  ],
+  "total_answer_predictions": 23,
+  "label_breakdown": {
+    "bad_answer_count": 1,
+    "uncited_answer_count": 0,
+    "bad_or_uncited_count": 1
+  },
+  "signal_stats": {
+    "faithfulness": {
+      "min": 0.7932549059391022,
+      "max": 0.9313664197921753,
+      "mean": 0.8720072299242018
+    },
+    "answer_relevancy": {
+      "min": 0.06557377049180327,
+      "max": 0.2857142857142857,
+      "mean": 0.18216793199513426
+    }
+  },
+  "recommended_thresholds": {
+    "faithfulness_low_alert_threshold": 0.8504889845848084,
+    "answer_relevancy_low_alert_threshold": 0.14705882352941174,
+    "fit_target": "bad_or_uncited_answer",
+    "faithfulness_fit_metrics": {
+      "threshold": 0.8504889845848084,
+      "tp": 1,
+      "fp": 6,
+      "fn": 0,
+      "tn": 16,
+      "precision": 0.14285714285714285,
+      "recall": 1.0,
+      "f1": 0.25,
+      "alert_rate": 0.30434782608695654,
+      "candidates_checked": 23
+    },
+    "answer_relevancy_fit_metrics": {
+      "threshold": 0.14705882352941174,
+      "tp": 1,
+      "fp": 6,
+      "fn": 0,
+      "tn": 16,
+      "precision": 0.14285714285714285,
+      "recall": 1.0,
+      "f1": 0.25,
+      "alert_rate": 0.30434782608695654,
+      "candidates_checked": 21
+    },
+    "combined_rule": "alert_if faithfulness <= faithfulness_low_alert_threshold OR answer_relevancy <= answer_relevancy_low_alert_threshold"
+  },
+  "shadow_report": {
+    "note": "Reporting-only shadow pass. No serving, gating, or promotion logic changed.",
+    "dataset_breakdown": {
+      "holdout": {
+        "total_answer_predictions": 4,
+        "alert_count": 3,
+        "alert_rate": 0.75,
+        "precision_bad_or_uncited": 0.0,
+        "recall_bad_or_uncited": 0.0
+      },
+      "manual": {
+        "total_answer_predictions": 11,
+        "alert_count": 6,
+        "alert_rate": 0.5454545454545454,
+        "precision_bad_or_uncited": 0.16666666666666666,
+        "recall_bad_or_uncited": 1.0
+      },
+      "synthetic": {
+        "total_answer_predictions": 8,
+        "alert_count": 4,
+        "alert_rate": 0.5,
+        "precision_bad_or_uncited": 0.0,
+        "recall_bad_or_uncited": 0.0
+      }
+    }
+  }
+}
