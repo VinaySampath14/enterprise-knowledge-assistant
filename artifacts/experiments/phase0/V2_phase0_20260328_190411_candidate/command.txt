@@ -1,8 +1,0 @@
-# Phase0 baseline invocation
-C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_phase0_baseline.py --dataset eval/manual.jsonl --category-field category --expected-type-field expected_type --phase-dir artifacts/experiments/phase0 --run-id V2_phase0_20260328_190411_candidate --repro-threshold 0.95
-
-# Run A
-C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval/manual.jsonl --results artifacts/experiments/phase0/V2_phase0_20260328_190411_candidate/predictions_run_a.jsonl --summary artifacts/experiments/phase0/V2_phase0_20260328_190411_candidate/summary_run_a.json --category-field category --expected-type-field expected_type
-
-# Run B
-C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\.venv\Scripts\python.exe C:\Users\Vinay\OneDrive\Desktop\enterprise-knowledge-assistant\scripts\experiments\run_eval_v2_synthetic.py --dataset eval/manual.jsonl --results artifacts/experiments/phase0/V2_phase0_20260328_190411_candidate/predictions_run_b.jsonl --summary artifacts/experiments/phase0/V2_phase0_20260328_190411_candidate/summary_run_b.json --category-field category --expected-type-field expected_type

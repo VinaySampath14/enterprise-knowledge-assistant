@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 from datetime import datetime, timezone
@@ -9,116 +8,14 @@ from typing import Any, Dict, List
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
 
 from src.api.schemas import QueryRequest, QueryResponse
 from src.config import load_app_config
 from src.api.deps import get_pipeline
+from src.monitoring.stats import compute_stats_from_query_log, default_stats_summary
 from src.rag.pipeline import RAGPipeline
-
-
-def _safe_float(v: Any, default: float = 0.0) -> float:
-    try:
-        if v is None:
-            return default
-        return float(v)
-    except (TypeError, ValueError):
-        return default
-
-
-def _mean(values: List[float]) -> float:
-    return sum(values) / len(values) if values else 0.0
-
-
-def _default_stats_summary() -> Dict[str, Any]:
-    return {
-        "total_queries": 0,
-        "type_counts": {"answer": 0, "clarify": 0, "refuse": 0},
-        "avg_confidence": 0.0,
-        "avg_top_score": 0.0,
-        "avg_latency_ms_total": 0.0,
-        "avg_latency_ms_retrieval": 0.0,
-        "avg_latency_ms_generation": 0.0,
-        "avg_num_sources": 0.0,
-        "avg_groundedness_overlap": 0.0,
-        "answer_only_avg_groundedness_overlap": 0.0,
-    }
-
-
-def _compute_stats_from_query_log(log_path: Path) -> Dict[str, Any]:
-    summary = _default_stats_summary()
-    type_counts = summary["type_counts"]
-
-    confidences: List[float] = []
-    top_scores: List[float] = []
-    lat_total: List[float] = []
-    lat_retrieval: List[float] = []
-    lat_generation: List[float] = []
-    num_sources: List[float] = []
-    groundedness: List[float] = []
-    groundedness_answer_only: List[float] = []
-
-    total = 0
-
-    if log_path.exists() and log_path.is_file():
-        try:
-            with log_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-
-                    try:
-                        rec = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-
-                    if not isinstance(rec, dict):
-                        continue
-
-                    total += 1
-
-                    rec_type = rec.get("type")
-                    if rec_type in type_counts:
-                        type_counts[rec_type] += 1
-
-                    meta = rec.get("meta")
-                    if not isinstance(meta, dict):
-                        meta = {}
-
-                    confidences.append(_safe_float(rec.get("confidence"), 0.0))
-                    top_scores.append(_safe_float(meta.get("top_score"), 0.0))
-                    lat_total.append(_safe_float(meta.get("latency_ms_total"), 0.0))
-                    lat_retrieval.append(_safe_float(meta.get("latency_ms_retrieval"), 0.0))
-                    lat_generation.append(_safe_float(meta.get("latency_ms_generation"), 0.0))
-
-                    if "num_sources" in rec:
-                        nsrc = _safe_float(rec.get("num_sources"), 0.0)
-                    else:
-                        srcs = rec.get("sources")
-                        nsrc = float(len(srcs)) if isinstance(srcs, list) else 0.0
-                    num_sources.append(nsrc)
-
-                    g = rec.get("groundedness_overlap")
-                    if g is not None:
-                        g_val = _safe_float(g, 0.0)
-                        groundedness.append(g_val)
-                        if rec_type == "answer":
-                            groundedness_answer_only.append(g_val)
-        except OSError:
-            return summary
-
-    return {
-        "total_queries": total,
-        "type_counts": type_counts,
-        "avg_confidence": _mean(confidences),
-        "avg_top_score": _mean(top_scores),
-        "avg_latency_ms_total": _mean(lat_total),
-        "avg_latency_ms_retrieval": _mean(lat_retrieval),
-        "avg_latency_ms_generation": _mean(lat_generation),
-        "avg_num_sources": _mean(num_sources),
-        "avg_groundedness_overlap": _mean(groundedness),
-        "answer_only_avg_groundedness_overlap": _mean(groundedness_answer_only),
-    }
+from src.utils.query_logger import QueryLogger
 
 
 def _validate_runtime_dependencies(repo_root: Path, cfg: Any) -> List[str]:
@@ -135,11 +32,12 @@ def _validate_runtime_dependencies(repo_root: Path, cfg: Any) -> List[str]:
     if bool(cfg.generation.enabled) and not os.getenv("OPENAI_API_KEY"):
         errors.append("OPENAI_API_KEY is required when generation is enabled")
 
-    log_path = repo_root / cfg.logging.path
-    try:
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        errors.append(f"invalid logging path: {log_path} ({e})")
+    if bool(cfg.logging.enabled):
+        log_path = repo_root / cfg.logging.path
+        try:
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            errors.append(f"invalid logging path: {log_path} ({e})")
 
     return errors
 
@@ -150,6 +48,7 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def _startup() -> None:
         repo_root = Path(__file__).resolve().parents[2]
+        load_dotenv(repo_root / ".env")
         app.state.startup_errors = []
 
         try:
@@ -162,7 +61,9 @@ def create_app() -> FastAPI:
         startup_errors = _validate_runtime_dependencies(repo_root, cfg)
 
         app.state.repo_root = repo_root
+        app.state.logging_enabled = bool(cfg.logging.enabled)
         app.state.query_log_path = repo_root / cfg.logging.path
+        app.state.query_logger = QueryLogger(app.state.query_log_path) if app.state.logging_enabled else None
         app.state.startup_errors = startup_errors
 
         if startup_errors:
@@ -197,13 +98,19 @@ def create_app() -> FastAPI:
 
     @app.get("/stats", response_model=dict)
     def stats() -> dict:
+        logging_enabled = bool(getattr(app.state, "logging_enabled", True))
         log_path = getattr(app.state, "query_log_path", Path("logs/queries.jsonl"))
-        summary = _compute_stats_from_query_log(log_path)
+        summary = (
+            compute_stats_from_query_log(log_path)
+            if logging_enabled
+            else default_stats_summary()
+        )
 
         return {
             "service": "enterprise-knowledge-assistant",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "log_path": str(log_path),
+            "logging_enabled": logging_enabled,
             **summary,
         }
 
@@ -220,6 +127,26 @@ def create_app() -> FastAPI:
 
         try:
             out = pipeline.run(payload.query, request_id=request_id)
+
+            query_logger = getattr(app.state, "query_logger", None)
+            if query_logger is not None:
+                try:
+                    sources = out.get("sources", []) if isinstance(out, dict) else []
+                    query_logger.log(
+                        {
+                            "query": payload.query,
+                            "type": out.get("type") if isinstance(out, dict) else None,
+                            "confidence": out.get("confidence") if isinstance(out, dict) else None,
+                            "meta": out.get("meta") if isinstance(out, dict) else {},
+                            "sources": sources if isinstance(sources, list) else [],
+                            "num_sources": len(sources) if isinstance(sources, list) else 0,
+                        },
+                        request_id=request_id,
+                    )
+                except Exception:
+                    # Logging failures should not fail API queries.
+                    pass
+
             return JSONResponse(content=out, headers={"X-Request-ID": request_id})
         except RuntimeError as e:
             raise HTTPException(status_code=502, detail="Upstream generation provider error") from e

@@ -23,6 +23,8 @@ class CrossEncoderReranker:
         self.model_name = str(cfg.reranker.model_name)
         self.candidate_k = max(1, int(cfg.reranker.candidate_k))
         self.max_length = max(32, int(cfg.reranker.max_length))
+        self.strategy = str(cfg.reranker.strategy)
+        self.low_margin_threshold = max(0.0, float(cfg.reranker.low_margin_threshold))
 
         self._model = model
         if self.enabled and self._model is None:
@@ -38,6 +40,23 @@ class CrossEncoderReranker:
         if heading:
             return f"{module} {heading}\n{text}".strip()
         return f"{module}\n{text}".strip()
+
+    @staticmethod
+    def _margin(hits: Sequence[RetrievedChunk]) -> float:
+        if len(hits) < 2:
+            return 0.0
+        return float(hits[0].score) - float(hits[1].score)
+
+    def should_rerank(self, hits: Sequence[RetrievedChunk]) -> bool:
+        if not self.enabled:
+            return False
+        if len(hits) <= 1:
+            return False
+        if self.strategy == "always":
+            return True
+        if self.strategy == "low_margin_only":
+            return self._margin(hits) <= self.low_margin_threshold
+        return True
 
     def rerank(self, query: str, hits: Sequence[RetrievedChunk], *, top_k: int) -> List[RetrievedChunk]:
         if top_k <= 0:

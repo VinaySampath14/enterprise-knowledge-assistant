@@ -1,0 +1,107 @@
+{
+  "total_queries": 93,
+  "total_answer_predictions": 36,
+  "overall_accuracy": 0.6989247311827957,
+  "predicted_type_counts": {
+    "answer": 36,
+    "refuse": 39,
+    "clarify": 18
+  },
+  "avg_latency_ms_total": 1925.355637636316,
+  "avg_latency_ms_retrieval": 426.24259785428563,
+  "avg_latency_ms_generation": 1498.76717204899,
+  "p50_latency_ms_total": 1165.000000037253,
+  "p95_latency_ms_total": 4607.650500163436,
+  "avg_faithfulness": 0.8696708796752824,
+  "avg_answer_relevancy": 0.11787102887638473,
+  "avg_faithfulness_answer_only": 0.8696708796752824,
+  "avg_answer_relevancy_answer_only": 0.11787102887638473,
+  "avg_faithfulness_all_predictions": 0.33664679213236737,
+  "avg_answer_relevancy_all_predictions": 0.04562749504892312,
+  "category_summary": {
+    "user_batch": {
+      "count": 93,
+      "accuracy": 0.6989247311827957,
+      "predicted_type_counts": {
+        "answer": 36,
+        "refuse": 39,
+        "clarify": 18
+      },
+      "avg_top_score": 0.48517707118424036,
+      "avg_citations_count": 0.946236559139785,
+      "avg_faithfulness": 0.8696708796752824,
+      "avg_answer_relevancy": 0.11787102887638473,
+      "avg_faithfulness_answer_only": 0.8696708796752824,
+      "avg_answer_relevancy_answer_only": 0.11787102887638473,
+      "avg_faithfulness_all_predictions": 0.33664679213236737,
+      "avg_answer_relevancy_all_predictions": 0.04562749504892312
+    }
+  },
+  "confusion_summary": {
+    "expected_answer_predicted_refuse": 4,
+    "expected_answer_predicted_clarify": 2,
+    "expected_refuse_predicted_answer": 2,
+    "expected_refuse_predicted_clarify": 10,
+    "expected_clarify_predicted_answer": 4,
+    "expected_clarify_predicted_refuse": 6
+  },
+  "worst_mismatches": [
+    {
+      "id": "usr-0089",
+      "category": "user_batch",
+      "query": "can I use threading with sqlite3?",
+      "expected_type": "refuse",
+      "predicted_type": "clarify",
+      "top_score": 0.7286357879638672,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    },
+    {
+      "id": "usr-0036",
+      "category": "user_batch",
+      "query": "how do I use argparse?",
+      "expected_type": "answer",
+      "predicted_type": "clarify",
+      "top_score": 0.7211881875991821,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    },
+    {
+      "id": "usr-0065",
+      "category": "user_batch",
+      "query": "pathlib vs os path whats better",
+      "expected_type": "answer",
+      "predicted_type": "refuse",
+      "top_score": 0.6746867299079895,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "usr-0087",
+      "category": "user_batch",
+      "query": "how do I make an HTTP request in asyncio?",
+      "expected_type": "clarify",
+      "predicted_type": "refuse",
+      "top_score": 0.656448245048523,
+      "citations_count": 0,
+      "answer_preview": "I don't have enough information from the provided documentation."
+    },
+    {
+      "id": "usr-0044",
+      "category": "user_batch",
+      "query": "itertools whats useful in there",
+      "expected_type": "answer",
+      "predicted_type": "clarify",
+      "top_score": 0.6313851475715637,
+      "citations_count": 0,
+      "answer_preview": "Could you clarify your question (e.g., which module/function you mean) so I can look it up in the documentation?"
+    }
+  ],
+  "notes": [
+    "Evaluation-only run over eval_v2 synthetic scaffold.",
+    "No retrieval/generation/confidence logic changes were applied by this script.",
+    "Faithfulness and answer relevancy are heuristic eval-only signals; not used for phase-gate promotion.",
+    "Category field: category",
+    "Expected type field: expected_type"
+  ]
+}

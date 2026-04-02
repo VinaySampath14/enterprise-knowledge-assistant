@@ -60,3 +60,37 @@ def test_reranker_reorders_using_model_but_preserves_original_scores():
     by_id = {h.chunk_id: h.score for h in out}
     assert by_id["s"] == 0.60
     assert by_id["a"] == 0.95
+
+
+def test_should_rerank_always_strategy():
+    repo_root = Path(__file__).resolve().parents[1]
+    r = CrossEncoderReranker(repo_root, model=_FakeCrossEncoder())
+    r.enabled = True
+    r.strategy = "always"
+
+    hits = [
+        _hit("a", "argparse", 0.95, "argparse usage"),
+        _hit("s", "sqlite3", 0.60, "sqlite3 connection details"),
+    ]
+
+    assert r.should_rerank(hits) is True
+
+
+def test_should_rerank_low_margin_only_respects_threshold():
+    repo_root = Path(__file__).resolve().parents[1]
+    r = CrossEncoderReranker(repo_root, model=_FakeCrossEncoder())
+    r.enabled = True
+    r.strategy = "low_margin_only"
+    r.low_margin_threshold = 0.05
+
+    low_margin_hits = [
+        _hit("a", "argparse", 0.62, "argparse usage"),
+        _hit("s", "sqlite3", 0.60, "sqlite3 connection details"),
+    ]
+    high_margin_hits = [
+        _hit("a", "argparse", 0.80, "argparse usage"),
+        _hit("s", "sqlite3", 0.60, "sqlite3 connection details"),
+    ]
+
+    assert r.should_rerank(low_margin_hits) is True
+    assert r.should_rerank(high_margin_hits) is False

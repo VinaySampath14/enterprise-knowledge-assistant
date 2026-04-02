@@ -1,0 +1,93 @@
+what does the argparse module provide? | answer
+how does heapq maintain sort order? | answer
+explain how asyncio event loop works | answer
+what is collections.defaultdict used for? | answer
+how do I match patterns in strings using the re module? | answer
+what does itertools.chain do? | answer
+how does the logging module handle log levels? | answer
+what is pathlib used for in Python? | answer
+how do I open a sqlite3 connection? | answer
+what does functools.lru_cache do? | answer
+does argparse support wildcard file matching? | refuse
+can asyncio parse command line arguments? | refuse
+how does threading handle JSON serialization? | refuse
+does pathlib have built-in CSV reading support? | refuse
+can heapq be used for HTTP requests? | refuse
+how do I run SQL queries using the logging module? | refuse
+does itertools support regex pattern matching? | refuse
+what is the difference between a list and a tuple? | refuse
+how does Python garbage collection work? | refuse
+what does the GIL mean for multithreaded code? | refuse
+what is a Python decorator? | refuse
+how do I install numpy? | refuse
+how do I use pandas to filter a dataframe? | refuse
+who won the FIFA World Cup in 2018? | refuse
+what is the capital of France? | refuse
+explain gradient descent in machine learning | refuse
+how do I center a div in CSS? | refuse
+best coffee shops in Weimar | refuse
+what is the plot of Dune? | refuse
+explain quantum entanglement simply | refuse
+how do I handle concurrency in Python? | clarify
+what module should I use for date and time? | clarify
+how do I schedule something to run every 5 minutes? | clarify
+how do I cache results in Python? | clarify
+how do I do async file operations? | clarify
+how do I use argparse? | answer
+whats the difference between os.path and pathlib | answer
+can I do async stuff with asyncio? | answer
+how do heaps work in python | answer
+logging setup in python | answer
+regex in python how does it work | answer
+sqlite in python basic connection example | answer
+how to serialize objects in python stdlib | answer
+itertools whats useful in there | answer
+collections module what can it do | answer
+how do I work with csv files | answer
+json parsing python | answer
+random number generation python stdlib | answer
+how do I copy files in python | answer
+string formatting python | answer
+whats the best way to handle concurrency in python | clarify
+how do I make my python code run faster with threads | clarify
+I need to schedule something to run periodically | clarify
+how do I cache function results | answer
+python file handling whats the right way | clarify
+how do I compress files in python | refuse
+I need to do some math operations what module | clarify
+how do I generate random passwords in python stdlib | answer
+how do i parse arguements in python | answer
+asyncio event loop expalined | answer
+heapq how does it maintian order | answer
+logging modul python | answer
+sqlite3 conection python | answer
+itertools chian what does it do | answer
+pathlib vs os path whats better | answer
+collectons defaultdict | answer
+how do I use glob patterns in argparse | refuse
+can asyncio do file path operations | refuse
+does threading module support json | refuse
+how do I do regex matching with pathlib | refuse
+can I use heapq with sqlite3 | refuse
+does logging support csv output | refuse
+how do I center a div | refuse
+whats the best python web framework | refuse
+how do I use pandas | refuse
+explain machine learning to me | refuse
+how does docker work | refuse
+whats a good laptop for programming | refuse
+how do I get better at python | refuse
+should I learn django or flask | refuse
+python | clarify
+how | clarify
+. | refuse
+what is | clarify
+how do I use python in python | clarify
+tell me everything about stdlib | clarify
+how do I make an HTTP request in asyncio? | clarify
+does argparse work with pathlib paths? | refuse
+can I use threading with sqlite3? | refuse
+how do I log to a database in Python? | refuse
+whats the fastest way to sort a million items in python stdlib? | answer
+how do I read excel files in python stdlib? | refuse
+can I do machine learning with just the stdlib? | refuse

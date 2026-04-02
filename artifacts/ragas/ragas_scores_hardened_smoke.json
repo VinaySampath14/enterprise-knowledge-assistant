@@ -1,0 +1,18 @@
+{
+  "faithfulness": 0.9141,
+  "answer_relevancy": 0.9114,
+  "context_precision": 0.7571,
+  "total_questions": 73,
+  "answer_rows_used": 33,
+  "answer_keep_rate": 0.4520547945205479,
+  "source_counts": {
+    "generated": 20,
+    "manual": 33,
+    "holdout": 20
+  },
+  "source_answer_rows_used": {
+    "generated": 18,
+    "manual": 11,
+    "holdout": 4
+  }
+}

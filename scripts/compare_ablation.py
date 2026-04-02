@@ -30,6 +30,14 @@ def _fmt_pct(value: Optional[float]) -> str:
     return f"{value:+.4f}"
 
 
+def _split_run_suffix(version: str) -> Tuple[str, int]:
+    v = version.strip()
+    m = re.search(r"^(.*?)(?:[_\-])r(\d+)$", v, flags=re.IGNORECASE)
+    if not m:
+        return v, 0
+    return m.group(1), int(m.group(2))
+
+
 def _false_rates_from_summary(summary: Dict[str, Any]) -> Tuple[Optional[float], Optional[float]]:
     total = summary.get("total_queries")
     if not isinstance(total, int) or total <= 0:
@@ -43,6 +51,30 @@ def _false_rates_from_summary(summary: Dict[str, Any]) -> Tuple[Optional[float],
         return None, None
 
     return false_ans / total, false_ref / total
+
+
+def _weighted_avg_from_category_summary(summary: Dict[str, Any], key: str) -> Optional[float]:
+    cat = summary.get("category_summary")
+    if not isinstance(cat, dict) or not cat:
+        return None
+
+    num = 0.0
+    den = 0
+    for obj in cat.values():
+        if not isinstance(obj, dict):
+            continue
+        count = obj.get("count")
+        val = obj.get(key)
+        if not isinstance(count, int) or count <= 0:
+            continue
+        if not isinstance(val, (int, float)):
+            continue
+        num += float(val) * count
+        den += count
+
+    if den <= 0:
+        return None
+    return num / den
 
 
 def _collect_from_summary_files(repo_root: Path) -> Dict[str, Dict[str, Any]]:
@@ -65,6 +97,14 @@ def _collect_from_summary_files(repo_root: Path) -> Dict[str, Dict[str, Any]]:
 
         false_ans, false_ref = _false_rates_from_summary(manual)
 
+        manual_top = _weighted_avg_from_category_summary(manual, "avg_top_score")
+        synthetic_top = _weighted_avg_from_category_summary(synthetic, "avg_top_score")
+        holdout_top = _weighted_avg_from_category_summary(holdout, "avg_top_score")
+
+        manual_citations = _weighted_avg_from_category_summary(manual, "avg_citations_count")
+        synthetic_citations = _weighted_avg_from_category_summary(synthetic, "avg_citations_count")
+        holdout_citations = _weighted_avg_from_category_summary(holdout, "avg_citations_count")
+
         rows[prefix] = {
             "version": prefix,
             "manual": float(manual.get("overall_accuracy", 0.0)),
@@ -73,6 +113,15 @@ def _collect_from_summary_files(repo_root: Path) -> Dict[str, Dict[str, Any]]:
             "false_ans": false_ans,
             "false_ref": false_ref,
             "faithfulness": None,
+            "manual_top_score": manual_top,
+            "synthetic_top_score": synthetic_top,
+            "holdout_top_score": holdout_top,
+            "manual_avg_citations": manual_citations,
+            "synthetic_avg_citations": synthetic_citations,
+            "holdout_avg_citations": holdout_citations,
+            "manual_avg_latency_ms": manual.get("avg_latency_ms_total"),
+            "synthetic_avg_latency_ms": synthetic.get("avg_latency_ms_total"),
+            "holdout_avg_latency_ms": holdout.get("avg_latency_ms_total"),
         }
 
     return rows
@@ -90,12 +139,13 @@ def _dataset_bucket(dataset_param: str) -> Optional[str]:
 
 
 def _version_sort_key(version: str) -> Tuple[int, int, int, str]:
-    v = version.strip().lower()
+    base, run_idx = _split_run_suffix(version)
+    v = base.strip().lower()
 
     # Put h0/h1-style baselines first when present.
     m_h = re.search(r"(?:^|[_\-])h(\d+)(?:$|[_\-])", v)
     if m_h:
-        return (0, int(m_h.group(1)), 0, v)
+        return (0, int(m_h.group(1)), run_idx, v)
 
     # Then sort vN, vNa, vNb style progression naturally.
     m_v = re.match(r"^v(\d+)([a-z]?)", v)
@@ -103,7 +153,7 @@ def _version_sort_key(version: str) -> Tuple[int, int, int, str]:
         major = int(m_v.group(1))
         suffix = m_v.group(2)
         suffix_ord = (ord(suffix) - ord("a") + 1) if suffix else 0
-        return (1, major, suffix_ord, v)
+        return (1, major, (suffix_ord * 1000) + run_idx, v)
 
     # Then stepN_hM style versions.
     m_step = re.search(r"(?:^|[_\-])step(\d+)([a-z]?)(?:$|[_\-])", v)
@@ -111,10 +161,18 @@ def _version_sort_key(version: str) -> Tuple[int, int, int, str]:
         major = int(m_step.group(1))
         suffix = m_step.group(2)
         suffix_ord = (ord(suffix) - ord("a") + 1) if suffix else 0
-        return (2, major, suffix_ord, v)
+        # Keep step-level variants grouped in a stable, human-expected order.
+        # For step10 experiments, show reranker baseline/runs before conditional threshold sweeps.
+        if "reranker_cross_encoder" in v:
+            family_rank = 0
+        elif "conditional_t" in v:
+            family_rank = 1
+        else:
+            family_rank = 2
+        return (2, major, family_rank * 100000 + (suffix_ord * 1000) + run_idx, v)
 
     # Fallback alphabetical.
-    return (3, 9999, 0, v)
+    return (3, 9999, run_idx, v)
 
 
 def _collect_from_mlflow(
@@ -170,10 +228,37 @@ def _collect_from_mlflow(
                 "false_ans": None,
                 "false_ref": None,
                 "faithfulness": None,
+                "manual_top_score": None,
+                "synthetic_top_score": None,
+                "holdout_top_score": None,
+                "manual_avg_citations": None,
+                "synthetic_avg_citations": None,
+                "holdout_avg_citations": None,
+                "manual_avg_latency_ms": None,
+                "synthetic_avg_latency_ms": None,
+                "holdout_avg_latency_ms": None,
             },
         )
 
         rec[bucket] = float(metrics.get("overall_accuracy", 0.0))
+        top_score = metrics.get("avg_top_score")
+        avg_latency = metrics.get("avg_latency_ms_total")
+
+        if bucket == "manual":
+            if isinstance(top_score, (int, float)):
+                rec["manual_top_score"] = float(top_score)
+            if isinstance(avg_latency, (int, float)):
+                rec["manual_avg_latency_ms"] = float(avg_latency)
+        elif bucket == "synthetic":
+            if isinstance(top_score, (int, float)):
+                rec["synthetic_top_score"] = float(top_score)
+            if isinstance(avg_latency, (int, float)):
+                rec["synthetic_avg_latency_ms"] = float(avg_latency)
+        elif bucket == "holdout":
+            if isinstance(top_score, (int, float)):
+                rec["holdout_top_score"] = float(top_score)
+            if isinstance(avg_latency, (int, float)):
+                rec["holdout_avg_latency_ms"] = float(avg_latency)
 
         if bucket == "manual":
             total = metrics.get("total_queries")
@@ -271,10 +356,16 @@ def _apply_metadata_file(rows: Dict[str, Dict[str, Any]], metadata_path: Optiona
     if not isinstance(data, dict):
         return
 
-    for version, obj in data.items():
-        if version not in rows or not isinstance(obj, dict):
+    for version, row in rows.items():
+        key = version
+        if key not in data:
+            base, _ = _split_run_suffix(version)
+            key = base
+        obj = data.get(key)
+
+        if not isinstance(obj, dict):
             continue
-        row = rows[version]
+
         row["what_changed"] = str(obj.get("what_changed", row.get("what_changed", ""))).strip()
         row["gate_verdict"] = str(obj.get("gate_verdict", row.get("gate_verdict", ""))).strip().upper()
         row["run_id"] = str(obj.get("run_id", row.get("run_id", ""))).strip()
@@ -333,7 +424,7 @@ def _decorate_rows(rows: List[Dict[str, Any]], *, fa_max: float, fr_max: float) 
             row["version_label"] = "baseline"
         else:
             version_counter += 1
-            row["version_label"] = f"v{version_counter} ({change_label})"
+            row["version_label"] = f"v{version_counter}"
 
         if prev is None:
             row["delta_prev_manual"] = None
@@ -376,12 +467,17 @@ def _build_executive_summary(rows: List[Dict[str, Any]]) -> List[str]:
 def _build_legend() -> List[str]:
     return [
         "## Legend",
+        "- Decision Quality table is release-focused (accuracy, safety, and phase-gate outcome).",
+        "- Answer/Retrieval Quality table is diagnostic (evidence and performance signals).",
         "- Manual/Synth/Holdout: Overall accuracy on each evaluation slice.",
         "- FalseAns: expected_refuse_predicted_answer / total_queries.",
         "- FalseRef: expected_answer_predicted_refuse / total_queries.",
         "- DeltaPrev(M/S/H): Manual, Synthetic, and Holdout deltas versus previous version row.",
         "- Safety: pass/warn/fail based on configured false-answer and false-refusal limits.",
         "- Faithfulness: Grounding quality score (placeholder until computed/logged).",
+        "- Top(M/S/H): Weighted avg top_score from each dataset summary category breakdown.",
+        "- Cites(M/S/H): Weighted avg citations_count from each dataset summary category breakdown.",
+        "- LatMs(M/S/H): avg_latency_ms_total when present in summary/MLflow, else '-'.",
         "- Decision and Run ID can be auto-filled from phase-gate MLflow runs by ablation version.",
         "- Rows with excluded prefixes (default: dryrun_, tmp_) are hidden unless explicitly included.",
     ]
@@ -408,14 +504,14 @@ def _filter_rows_by_prefix(
     return out
 
 
-def _render_table(rows: List[Dict[str, Any]]) -> str:
+def _render_decision_quality_table(rows: List[Dict[str, Any]]) -> str:
     header = (
         "Version | What Changed | Manual | Synth | Holdout | FalseAns | FalseRef "
-        "| DeltaPrev(M/S/H) | Safety | Faith | Decision | Run ID | Notes"
+        "| DeltaPrev(M/S/H) | Safety | Decision | Run ID | Notes"
     )
     sep = (
         "--------|--------------|--------|-------|---------|----------|----------"
-        "|------------------|--------|-------|----------|--------|------"
+        "|------------------|--------|----------|--------|------"
     )
     lines = [header, sep]
 
@@ -433,9 +529,45 @@ def _render_table(rows: List[Dict[str, Any]]) -> str:
             f" | {_fmt_num(r.get('false_ref'))}"
             f" | {delta_m}/{delta_s}/{delta_h}"
             f" | {r.get('safety_status', '-') }"
-            f" | {_fmt_faith(r.get('faithfulness'))}"
             f" | {str(r.get('gate_verdict', '-'))}"
             f" | {str(r.get('run_id', '-'))}"
+            f" | {str(r.get('notes', '-'))}"
+        )
+
+    return "\n".join(lines)
+
+
+def _render_answer_retrieval_quality_table(rows: List[Dict[str, Any]]) -> str:
+    header = (
+        "Version | What Changed | Faith | Top(M/S/H) | Cites(M/S/H) | LatMs(M/S/H) | Notes"
+    )
+    sep = "--------|--------------|------|------------|-------------|------------|------"
+    lines = [header, sep]
+
+    for r in rows:
+        top_triplet = (
+            f"{_fmt_num(r.get('manual_top_score'))}/"
+            f"{_fmt_num(r.get('synthetic_top_score'))}/"
+            f"{_fmt_num(r.get('holdout_top_score'))}"
+        )
+        cite_triplet = (
+            f"{_fmt_num(r.get('manual_avg_citations'))}/"
+            f"{_fmt_num(r.get('synthetic_avg_citations'))}/"
+            f"{_fmt_num(r.get('holdout_avg_citations'))}"
+        )
+        lat_triplet = (
+            f"{_fmt_num(r.get('manual_avg_latency_ms'))}/"
+            f"{_fmt_num(r.get('synthetic_avg_latency_ms'))}/"
+            f"{_fmt_num(r.get('holdout_avg_latency_ms'))}"
+        )
+
+        lines.append(
+            f"{str(r.get('version_label', r['version']))}"
+            f" | {str(r.get('what_changed', '-'))}"
+            f" | {_fmt_faith(r.get('faithfulness'))}"
+            f" | {top_triplet}"
+            f" | {cite_triplet}"
+            f" | {lat_triplet}"
             f" | {str(r.get('notes', '-'))}"
         )
 
@@ -555,9 +687,16 @@ def main() -> None:
 
     summary_lines = _build_executive_summary(rows)
     legend_lines = _build_legend()
-    table = _render_table(rows)
+    decision_table = _render_decision_quality_table(rows)
+    quality_table = _render_answer_retrieval_quality_table(rows)
 
-    doc = "\n".join(summary_lines + [""] + legend_lines + ["", "## Comparison Table", "", table])
+    doc = "\n".join(
+        summary_lines
+        + [""]
+        + legend_lines
+        + ["", "## Decision Quality Table", "", decision_table]
+        + ["", "## Answer and Retrieval Quality Table", "", quality_table]
+    )
 
     out_path = Path(args.output)
     if not out_path.is_absolute():

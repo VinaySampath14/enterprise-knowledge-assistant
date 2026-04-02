@@ -1,0 +1,93 @@
+{"id":"usr-0001","category":"user_batch","query":"what does the argparse module provide?","expected_type":"answer"}
+{"id":"usr-0002","category":"user_batch","query":"how does heapq maintain sort order?","expected_type":"answer"}
+{"id":"usr-0003","category":"user_batch","query":"explain how asyncio event loop works","expected_type":"answer"}
+{"id":"usr-0004","category":"user_batch","query":"what is collections.defaultdict used for?","expected_type":"answer"}
+{"id":"usr-0005","category":"user_batch","query":"how do I match patterns in strings using the re module?","expected_type":"answer"}
+{"id":"usr-0006","category":"user_batch","query":"what does itertools.chain do?","expected_type":"answer"}
+{"id":"usr-0007","category":"user_batch","query":"how does the logging module handle log levels?","expected_type":"answer"}
+{"id":"usr-0008","category":"user_batch","query":"what is pathlib used for in Python?","expected_type":"answer"}
+{"id":"usr-0009","category":"user_batch","query":"how do I open a sqlite3 connection?","expected_type":"answer"}
+{"id":"usr-0010","category":"user_batch","query":"what does functools.lru_cache do?","expected_type":"answer"}
+{"id":"usr-0011","category":"user_batch","query":"does argparse support wildcard file matching?","expected_type":"refuse"}
+{"id":"usr-0012","category":"user_batch","query":"can asyncio parse command line arguments?","expected_type":"refuse"}
+{"id":"usr-0013","category":"user_batch","query":"how does threading handle JSON serialization?","expected_type":"refuse"}
+{"id":"usr-0014","category":"user_batch","query":"does pathlib have built-in CSV reading support?","expected_type":"refuse"}
+{"id":"usr-0015","category":"user_batch","query":"can heapq be used for HTTP requests?","expected_type":"refuse"}
+{"id":"usr-0016","category":"user_batch","query":"how do I run SQL queries using the logging module?","expected_type":"refuse"}
+{"id":"usr-0017","category":"user_batch","query":"does itertools support regex pattern matching?","expected_type":"refuse"}
+{"id":"usr-0018","category":"user_batch","query":"what is the difference between a list and a tuple?","expected_type":"refuse"}
+{"id":"usr-0019","category":"user_batch","query":"how does Python garbage collection work?","expected_type":"refuse"}
+{"id":"usr-0020","category":"user_batch","query":"what does the GIL mean for multithreaded code?","expected_type":"refuse"}
+{"id":"usr-0021","category":"user_batch","query":"what is a Python decorator?","expected_type":"refuse"}
+{"id":"usr-0022","category":"user_batch","query":"how do I install numpy?","expected_type":"refuse"}
+{"id":"usr-0023","category":"user_batch","query":"how do I use pandas to filter a dataframe?","expected_type":"refuse"}
+{"id":"usr-0024","category":"user_batch","query":"who won the FIFA World Cup in 2018?","expected_type":"refuse"}
+{"id":"usr-0025","category":"user_batch","query":"what is the capital of France?","expected_type":"refuse"}
+{"id":"usr-0026","category":"user_batch","query":"explain gradient descent in machine learning","expected_type":"refuse"}
+{"id":"usr-0027","category":"user_batch","query":"how do I center a div in CSS?","expected_type":"refuse"}
+{"id":"usr-0028","category":"user_batch","query":"best coffee shops in Weimar","expected_type":"refuse"}
+{"id":"usr-0029","category":"user_batch","query":"what is the plot of Dune?","expected_type":"refuse"}
+{"id":"usr-0030","category":"user_batch","query":"explain quantum entanglement simply","expected_type":"refuse"}
+{"id":"usr-0031","category":"user_batch","query":"how do I handle concurrency in Python?","expected_type":"clarify"}
+{"id":"usr-0032","category":"user_batch","query":"what module should I use for date and time?","expected_type":"clarify"}
+{"id":"usr-0033","category":"user_batch","query":"how do I schedule something to run every 5 minutes?","expected_type":"clarify"}
+{"id":"usr-0034","category":"user_batch","query":"how do I cache results in Python?","expected_type":"clarify"}
+{"id":"usr-0035","category":"user_batch","query":"how do I do async file operations?","expected_type":"clarify"}
+{"id":"usr-0036","category":"user_batch","query":"how do I use argparse?","expected_type":"answer"}
+{"id":"usr-0037","category":"user_batch","query":"whats the difference between os.path and pathlib","expected_type":"answer"}
+{"id":"usr-0038","category":"user_batch","query":"can I do async stuff with asyncio?","expected_type":"answer"}
+{"id":"usr-0039","category":"user_batch","query":"how do heaps work in python","expected_type":"answer"}
+{"id":"usr-0040","category":"user_batch","query":"logging setup in python","expected_type":"answer"}
+{"id":"usr-0041","category":"user_batch","query":"regex in python how does it work","expected_type":"answer"}
+{"id":"usr-0042","category":"user_batch","query":"sqlite in python basic connection example","expected_type":"answer"}
+{"id":"usr-0043","category":"user_batch","query":"how to serialize objects in python stdlib","expected_type":"answer"}
+{"id":"usr-0044","category":"user_batch","query":"itertools whats useful in there","expected_type":"answer"}
+{"id":"usr-0045","category":"user_batch","query":"collections module what can it do","expected_type":"answer"}
+{"id":"usr-0046","category":"user_batch","query":"how do I work with csv files","expected_type":"answer"}
+{"id":"usr-0047","category":"user_batch","query":"json parsing python","expected_type":"answer"}
+{"id":"usr-0048","category":"user_batch","query":"random number generation python stdlib","expected_type":"answer"}
+{"id":"usr-0049","category":"user_batch","query":"how do I copy files in python","expected_type":"answer"}
+{"id":"usr-0050","category":"user_batch","query":"string formatting python","expected_type":"answer"}
+{"id":"usr-0051","category":"user_batch","query":"whats the best way to handle concurrency in python","expected_type":"clarify"}
+{"id":"usr-0052","category":"user_batch","query":"how do I make my python code run faster with threads","expected_type":"clarify"}
+{"id":"usr-0053","category":"user_batch","query":"I need to schedule something to run periodically","expected_type":"clarify"}
+{"id":"usr-0054","category":"user_batch","query":"how do I cache function results","expected_type":"answer"}
+{"id":"usr-0055","category":"user_batch","query":"python file handling whats the right way","expected_type":"clarify"}
+{"id":"usr-0056","category":"user_batch","query":"how do I compress files in python","expected_type":"refuse"}
+{"id":"usr-0057","category":"user_batch","query":"I need to do some math operations what module","expected_type":"clarify"}
+{"id":"usr-0058","category":"user_batch","query":"how do I generate random passwords in python stdlib","expected_type":"answer"}
+{"id":"usr-0059","category":"user_batch","query":"how do i parse arguements in python","expected_type":"answer"}
+{"id":"usr-0060","category":"user_batch","query":"asyncio event loop expalined","expected_type":"answer"}
+{"id":"usr-0061","category":"user_batch","query":"heapq how does it maintian order","expected_type":"answer"}
+{"id":"usr-0062","category":"user_batch","query":"logging modul python","expected_type":"answer"}
+{"id":"usr-0063","category":"user_batch","query":"sqlite3 conection python","expected_type":"answer"}
+{"id":"usr-0064","category":"user_batch","query":"itertools chian what does it do","expected_type":"answer"}
+{"id":"usr-0065","category":"user_batch","query":"pathlib vs os path whats better","expected_type":"answer"}
+{"id":"usr-0066","category":"user_batch","query":"collectons defaultdict","expected_type":"answer"}
+{"id":"usr-0067","category":"user_batch","query":"how do I use glob patterns in argparse","expected_type":"refuse"}
+{"id":"usr-0068","category":"user_batch","query":"can asyncio do file path operations","expected_type":"refuse"}
+{"id":"usr-0069","category":"user_batch","query":"does threading module support json","expected_type":"refuse"}
+{"id":"usr-0070","category":"user_batch","query":"how do I do regex matching with pathlib","expected_type":"refuse"}
+{"id":"usr-0071","category":"user_batch","query":"can I use heapq with sqlite3","expected_type":"refuse"}
+{"id":"usr-0072","category":"user_batch","query":"does logging support csv output","expected_type":"refuse"}
+{"id":"usr-0073","category":"user_batch","query":"how do I center a div","expected_type":"refuse"}
+{"id":"usr-0074","category":"user_batch","query":"whats the best python web framework","expected_type":"refuse"}
+{"id":"usr-0075","category":"user_batch","query":"how do I use pandas","expected_type":"refuse"}
+{"id":"usr-0076","category":"user_batch","query":"explain machine learning to me","expected_type":"refuse"}
+{"id":"usr-0077","category":"user_batch","query":"how does docker work","expected_type":"refuse"}
+{"id":"usr-0078","category":"user_batch","query":"whats a good laptop for programming","expected_type":"refuse"}
+{"id":"usr-0079","category":"user_batch","query":"how do I get better at python","expected_type":"refuse"}
+{"id":"usr-0080","category":"user_batch","query":"should I learn django or flask","expected_type":"refuse"}
+{"id":"usr-0081","category":"user_batch","query":"python","expected_type":"clarify"}
+{"id":"usr-0082","category":"user_batch","query":"how","expected_type":"clarify"}
+{"id":"usr-0083","category":"user_batch","query":".","expected_type":"refuse"}
+{"id":"usr-0084","category":"user_batch","query":"what is","expected_type":"clarify"}
+{"id":"usr-0085","category":"user_batch","query":"how do I use python in python","expected_type":"clarify"}
+{"id":"usr-0086","category":"user_batch","query":"tell me everything about stdlib","expected_type":"clarify"}
+{"id":"usr-0087","category":"user_batch","query":"how do I make an HTTP request in asyncio?","expected_type":"clarify"}
+{"id":"usr-0088","category":"user_batch","query":"does argparse work with pathlib paths?","expected_type":"refuse"}
+{"id":"usr-0089","category":"user_batch","query":"can I use threading with sqlite3?","expected_type":"refuse"}
+{"id":"usr-0090","category":"user_batch","query":"how do I log to a database in Python?","expected_type":"refuse"}
+{"id":"usr-0091","category":"user_batch","query":"whats the fastest way to sort a million items in python stdlib?","expected_type":"answer"}
+{"id":"usr-0092","category":"user_batch","query":"how do I read excel files in python stdlib?","expected_type":"refuse"}
+{"id":"usr-0093","category":"user_batch","query":"can I do machine learning with just the stdlib?","expected_type":"refuse"}

@@ -15,13 +15,20 @@ class AnswerRow:
     citations_count: int
     faithfulness: float
     answer_relevancy: float
+    final_grounded_or_not: str = ""
+    final_relevant_or_not: str = ""
+    final_citation_quality: str = ""
 
     @property
     def is_bad_answer(self) -> bool:
+        if self.final_grounded_or_not or self.final_relevant_or_not:
+            return (self.final_grounded_or_not == "not_grounded") or (self.final_relevant_or_not == "not_relevant")
         return self.expected_type != "answer"
 
     @property
     def is_uncited(self) -> bool:
+        if self.final_citation_quality:
+            return self.final_citation_quality == "low"
         return self.citations_count <= 0
 
     @property
@@ -78,6 +85,9 @@ def _load_answer_rows(paths: List[Path]) -> List[AnswerRow]:
                     citations_count=int(obj.get("citations_count", 0) or 0),
                     faithfulness=_to_float(obj.get("faithfulness"), 0.0),
                     answer_relevancy=_to_float(obj.get("answer_relevancy"), 0.0),
+                    final_grounded_or_not=str(obj.get("final_grounded_or_not", "")).strip(),
+                    final_relevant_or_not=str(obj.get("final_relevant_or_not", "")).strip(),
+                    final_citation_quality=str(obj.get("final_citation_quality", "")).strip(),
                 )
             )
     return rows
@@ -175,6 +185,13 @@ def _build_summary(version: str, inputs: List[Path], rows: List[AnswerRow]) -> D
 
     labels_bad_answer = [r.is_bad_answer for r in rows]
     labels_bad_or_uncited = [r.is_bad_or_uncited for r in rows]
+    labeled_rows = sum(
+        1
+        for r in rows
+        if r.final_grounded_or_not in {"grounded", "not_grounded"}
+        and r.final_relevant_or_not in {"relevant", "not_relevant"}
+        and r.final_citation_quality in {"high", "medium", "low"}
+    )
 
     best_faith = _find_best_threshold(faith_values, labels_bad_or_uncited)
     best_rel = _find_best_threshold(rel_values, labels_bad_or_uncited)
@@ -185,6 +202,8 @@ def _build_summary(version: str, inputs: List[Path], rows: List[AnswerRow]) -> D
         "ablation_version": version,
         "input_files": [str(p) for p in inputs],
         "total_answer_predictions": len(rows),
+        "label_mode": "human_labeled_pool" if labeled_rows > 0 else "expected_type_proxy",
+        "labeled_rows": labeled_rows,
         "label_breakdown": {
             "bad_answer_count": sum(1 for r in rows if r.is_bad_answer),
             "uncited_answer_count": sum(1 for r in rows if r.is_uncited),

@@ -40,6 +40,8 @@ class RerankerConfig(BaseModel):
     model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     candidate_k: int = 12
     max_length: int = 256
+    strategy: Literal["always", "low_margin_only"] = "always"
+    low_margin_threshold: float = 0.05
 
 
 class ConfidenceConfig(BaseModel):

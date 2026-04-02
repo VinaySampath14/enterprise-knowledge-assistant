@@ -267,7 +267,11 @@ class RAGPipeline:
         t_retrieval_start = time.perf_counter()
         retrieval_k = self.reranker.candidate_k if self.reranker.enabled else None
         hits = self.retriever.retrieve(query, top_k=retrieval_k)
-        hits = self.reranker.rerank(query, hits, top_k=int(self.cfg.retrieval.top_k))
+        reranker_applied = self.reranker.should_rerank(hits)
+        if reranker_applied:
+            hits = self.reranker.rerank(query, hits, top_k=int(self.cfg.retrieval.top_k))
+        else:
+            hits = list(hits)[: int(self.cfg.retrieval.top_k)]
         t_retrieval_end = time.perf_counter()
 
         decision = self.gate.decide(hits, query=query)
@@ -403,6 +407,9 @@ class RAGPipeline:
                     else ""
                 ),
                 "retrieved_k": len(hits),
+                "reranker_enabled": bool(self.reranker.enabled),
+                "reranker_strategy": str(self.reranker.strategy),
+                "reranker_applied": bool(reranker_applied),
                 "latency_ms_total": (t1 - t0) * 1000,
                 "latency_ms_retrieval": (t_retrieval_end - t_retrieval_start) * 1000,
                 "latency_ms_generation": (
