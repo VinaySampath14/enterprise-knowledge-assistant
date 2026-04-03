@@ -10,18 +10,30 @@ A Retrieval-Augmented Generation (RAG) API for answering questions about the Pyt
 - **Response types**: `answer`, `clarify`, or `refuse` — never a hallucinated answer
 - **Observability**: Every query logged to `logs/queries.jsonl`; `GET /stats` aggregates in real time
 
-## Pipeline
+## Architecture
 
-```
-Query
-  └─► Intent Classification  (in_domain / out_of_domain / ambiguous)
-        └─► [early refuse if clearly out-of-domain]
-        └─► Retrieval  (dense · BM25 · hybrid RRF)
-              └─► Cross-encoder Reranking  (conditional, low-margin only)
-                    └─► Confidence Gate  (answer · clarify · refuse)
-                          └─► [generation if answer]
-                                └─► Post-gen Refusal Override  (safety net)
-                                      └─► Response
+```mermaid
+flowchart TD
+    A([User Query]) --> B[Intent Classifier]
+    B -->|out_of_domain| C([🚫 Refuse])
+    B -->|in_domain / ambiguous| D[Retriever]
+
+    D --> D1[Dense — FAISS\nall-MiniLM-L6-v2]
+    D --> D2[BM25\nrank-bm25]
+    D1 & D2 --> D3[Hybrid RRF Fusion]
+
+    D3 --> E{Low score margin?}
+    E -->|yes| F[Cross-encoder Reranker\nms-marco-MiniLM-L-6-v2]
+    E -->|no| G[Confidence Gate]
+    F --> G
+
+    G -->|score below threshold_low| C
+    G -->|score in middle band| H([💬 Clarify])
+    G -->|score above threshold_high| I[GPT-4o-mini Generator]
+
+    I --> J{Post-gen Refusal\nOverride}
+    J -->|refusal detected| C
+    J -->|grounded answer| K([✅ Answer + Citations])
 ```
 
 ## Prerequisites
@@ -137,6 +149,8 @@ Key fields in `config.yaml`:
 
 ## Docker
 
+> **Note:** The Dockerfile copies `indexes/` at build time (`COPY indexes /app/indexes`). You must build the artifacts locally before running `docker build`, otherwise the container will start in a `degraded` state. Run the validate/build steps in Quick Start first.
+
 ```bash
 docker build -t enterprise-knowledge-assistant:latest .
 docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... enterprise-knowledge-assistant:latest
@@ -148,33 +162,14 @@ Or with compose (mounts `./logs` into the container):
 docker compose up --build
 ```
 
-## Key Scripts
+## Development
 
-**Build & validate**
-```bash
-python scripts/build_docs.py
-python scripts/build_chunks.py
-python scripts/build_index.py
-python scripts/validate_docs.py
-python scripts/validate_chunks.py
-python scripts/validate_index.py
-```
+**Debug scripts** — run against a live API or local pipeline:
 
-**Debug**
 ```bash
 python scripts/debug/query_pipeline.py "<query>"   # full pipeline trace
 python scripts/debug/query_retrieve.py "<query>"   # retrieval only
 python scripts/debug/query_gate.py "<query>"       # gate decision only
-```
-
-**Evaluation & experiments**
-```bash
-python scripts/run_eval.py
-python scripts/experiments/run_eval_v2_synthetic.py
-python scripts/experiments/run_phase0_baseline.py
-python scripts/experiments/run_phase_gate.py
-python scripts/experiments/run_bundle.py
-python scripts/experiments/run_ragas_eval.py
 ```
 
 ## Experiments & Results

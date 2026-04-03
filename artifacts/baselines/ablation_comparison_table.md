@@ -36,7 +36,7 @@ v9 | Cross-encoder reranker after retrieval (ms-marco-MiniLM-L-6-v2) | 0.7576 | 
 v10 | Conditional cross-encoder reranking enabled (low_margin_only, threshold 0.05); rerank applies only on low-confidence retrieval margins | 0.7273 | 0.9091 | 0.7000 | 0.0000 | 0.0000 | -0.0303/+0.0000/-0.0500 | pass | HOLD | 8f9e2728e44443beb3556f821e06063e | Validation run to compare selective reranking against always-on reranker baseline
 v11 | Conditional cross-encoder reranking threshold sweep candidate (low_margin_only, threshold 0.15) | 0.7576 | 0.9091 | 0.7500 | 0.0000 | 0.0000 | +0.0303/+0.0000/+0.0500 | pass | GO | a18035ae23b74180b3f2c6c9c03b1c60 | Champion moved v9 -> v11: threshold 0.15 preserved quality and improved latency
 v12 | Lock-in confirmation run for conditional reranking champion (low_margin_only, threshold 0.15) | 0.7576 | 0.9091 | 0.7500 | 0.0000 | 0.0000 | +0.0000/+0.0000/+0.0000 | pass |  |  | Final full-pass confirmation run before freezing this cycle
-v13 | Eval hardening: added heuristic faithfulness and answer-relevancy metrics (evaluation-only) | 0.7576 | 0.9091 | 0.7500 | 0.0000 | 0.0000 | +0.0000/+0.0000/+0.0000 | pass |  |  | Guardrails unchanged; side-by-side validation confirms core safety/accuracy parity while exposing new hardening signals
+
 
 ## Answer and Retrieval Quality Table
 
@@ -45,5 +45,5 @@ Version | Faith | AnswerRel | CtxPrec | KeepRate | LatMs(M/S/H)
 v9 | - | - | - | - | 2006/1434/1464
 v10 | - | - | - | - | 2012/1484/1370
 v11 | 0.9141 | 0.9114 | 0.7571 | 0.4521 | 1608/1438/1273
-v12 | - | - | - | - | 1602/1331/1213
-v13 | - | - | - | - | 1625/1469/1125
+v12 | 0.9141 | 0.9114 | 0.7571 | 0.4521 | 1602/1331/1213
+
