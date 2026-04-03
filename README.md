@@ -1,6 +1,30 @@
 # Enterprise Knowledge Assistant
+[github.com/VinaySampath14/enterprise-knowledge-assistant](https://github.com/VinaySampath14/enterprise-knowledge-assistant)
 
-A Retrieval-Augmented Generation (RAG) API for answering questions about the Python standard library. It combines dense vector retrieval, BM25 sparse retrieval, cross-encoder reranking, and a multi-stage confidence gate to return answers, ask for clarification, or refuse — prioritizing correctness over coverage.
+A Retrieval-Augmented Generation (RAG) API for answering questions about the Python standard library. It combines dense vector retrieval, BM25 sparse retrieval, cross-encoder reranking, and a multi-stage confidence gate to return answers, ask for clarification, or refuse — prioritizing correctness over coverage. Developed using a phase-gate ablation methodology: 13 versions evaluated, 6 promoted, 2 rejected with immediate revert, all tracked via MLflow.
+
+---
+
+## Key Results
+
+| Metric | Value |
+|--------|-------|
+| Manual benchmark accuracy | 75.8% (33 questions) |
+| Paraphrased holdout accuracy | 75.0% (20 questions) |
+| Real-world query accuracy | 69.9% (93 user-phrased queries) |
+| False answer rate | 0.00% across all 13 ablation versions |
+| False refusal rate | 0.00% in champion version |
+| RAGAS faithfulness | 0.914 |
+| RAGAS answer relevancy | 0.911 |
+| Avg latency | 1608ms (p50: 1165ms, p95: 4608ms) |
+
+The 0.8% gap between manual and holdout accuracy confirms 
+generalisation to unseen query phrasing. The zero false-answer 
+rate held across all promoted versions — the system never 
+confidently answers a question it cannot ground in retrieved 
+documentation.
+
+---
 
 ## What It Does
 
@@ -162,14 +186,30 @@ Or with compose (mounts `./logs` into the container):
 docker compose up --build
 ```
 
-## Development
+## Reproduce Results
 
-**Debug scripts** — run against a live API or local pipeline:
-
+Build artifacts (required once before first run):
 ```bash
-python scripts/debug/query_pipeline.py "<query>"   # full pipeline trace
-python scripts/debug/query_retrieve.py "<query>"   # retrieval only
-python scripts/debug/query_gate.py "<query>"       # gate decision only
+python scripts/build_docs.py      # RST → docs.jsonl
+python scripts/build_chunks.py    # docs → chunks.jsonl
+python scripts/build_index.py     # chunks → FAISS index
+```
+
+Run evaluation against all three sets:
+```bash
+python scripts/run_eval.py
+python scripts/experiments/run_ragas_eval.py
+```
+
+View full experiment history in MLflow:
+```bash
+mlflow ui --backend-store-uri artifacts/mlflow
+```
+
+Debug a specific query through each pipeline stage:
+```bash
+python scripts/debug/query_pipeline.py "how does heapq work?"
+python scripts/debug/query_gate.py "how does heapq work?"
 ```
 
 ## Experiments & Results
@@ -211,8 +251,38 @@ Metrics computed via RAGAS on answer-producing predictions only.
 | v10 | — | — | — | — | 2012 / 1484 / 1370 |
 | v11 | **0.914** | **0.911** | 0.757 | 0.452 | 1608 / 1438 / 1273 |
 | v12 | 0.914 | 0.911 | 0.757 | 0.452 | **1602 / 1331 / 1213** |
+| Real-world batch | — | — | — | — | 1925 avg / — / — |
+
+Real-world batch: 93 user-phrased queries evaluated 
+separately (not used in any tuning). Overall accuracy 69.9%, 
+answer accuracy 83.3%, refuse accuracy 70.7%, clarify 
+accuracy 37.5%.
 
 Latency columns: M = Manual set, S = Synthetic set, H = Holdout set.
+
+---
+
+## Failure Taxonomy
+
+Seven failure categories were identified and tracked across 
+versions. Each category has a root cause and resolution status.
+
+| Category | Description | Root Cause | Status |
+|----------|-------------|------------|--------|
+| A — In-domain false refusals | Explanatory queries refused despite high retrieval score | Mismatch check firing on conceptual queries | Resolved — baseline cleanup |
+| B — Python-general leakage | GIL and decorator queries answered from training knowledge | No domain boundary before retrieval | Resolved — v1 intent classifier |
+| C — Label quality | Two eval queries mislabelled as clarify | Human labelling error | Resolved — baseline |
+| D — OOD landing in clarify | CSS and Dune queries falling in middle score band | th_low too low (0.25) | Resolved — baseline cleanup |
+| E — Recoverable misclassification | Vague queries refused or wrongly answered | No intent layer — score was only signal | Resolved — v1 intent classifier |
+| F — Score-driven instability | Similar scores producing inconsistent decisions | Score overloaded as proxy for confidence and intent | Resolved — v1 intent classifier |
+| G — Lexical mismatch | Paraphrased queries scoring below threshold | General-purpose embedding model vocabulary gap | Partially resolved — v5 and v9 |
+
+Two residual failures remain — corpus boundary cases where 
+concepts appear tangentially in documentation (e.g. GIL 
+mentioned in threading docs) but fall outside the system's 
+intended scope.
+
+---
 
 ### Confidence Threshold Calibration
 
@@ -225,25 +295,6 @@ Top retrieval score distribution by expected response type (67 samples):
 | refuse | 27 | 0.250 | 0.177 | 0.239 |
 
 Current thresholds: `threshold_high=0.4`, `threshold_low=0.25`. Calibration proposed `0.62/0.41` but was not adopted — simulated accuracy gain (+11 pp) came at the cost of synthetic set regression.
-
-## Evaluation
-
-```bash
-# Basic eval against eval/questions.jsonl
-python scripts/run_eval.py
-
-# Synthetic query eval (generates + evaluates)
-python scripts/experiments/run_eval_v2_synthetic.py
-
-# RAGAS metrics (faithfulness, answer relevancy, context precision)
-python scripts/experiments/run_ragas_eval.py
-```
-
-Outputs: `eval/results.jsonl`, `eval/report.json`, `eval/report.md`
-
-Metrics computed: accuracy by expected type, false-answer rate, false-refusal rate, groundedness (lexical overlap), avg latency.
-
-MLflow tracking data is stored in `artifacts/mlflow/`.
 
 ## Testing
 
