@@ -1,35 +1,41 @@
 # Enterprise Knowledge Assistant
 [github.com/VinaySampath14/enterprise-knowledge-assistant](https://github.com/VinaySampath14/enterprise-knowledge-assistant)
 
-A Retrieval-Augmented Generation (RAG) API for answering questions about the Python standard library. It combines dense vector retrieval, BM25 sparse retrieval, cross-encoder reranking, and a multi-stage confidence gate to return answers, ask for clarification, or refuse — prioritizing correctness over coverage. Developed using a phase-gate ablation methodology: 13 versions evaluated, 6 promoted, 2 rejected with immediate revert, all tracked via MLflow.
+A production-style API that answers questions about the Python standard library — engineered to **never confidently return a wrong answer**. The system refuses or asks for clarification rather than guessing, a guarantee that held across all 13 iterative versions built and evaluated during development.
+
+Built with hybrid retrieval (dense + BM25 + cross-encoder reranking), a multi-stage confidence gate, and a structured ablation methodology: every version evaluated on three independent test sets, regressions reverted immediately, all runs tracked in MLflow.
 
 ---
 
 ## Key Results
 
+The system prioritizes correctness over coverage. A **false answer** (expected refuse, predicted answer) is treated as a safety failure — it was held to 0.00% across every promoted version. The 0.8% gap between manual and holdout accuracy confirms generalisation to unseen query phrasing.
+
 | Metric | Value |
 |--------|-------|
 | Manual benchmark accuracy | 75.8% (33 questions) |
 | Paraphrased holdout accuracy | 75.0% (20 questions) |
-| Real-world query accuracy | 69.9% (93 user-phrased queries) |
-| False answer rate | 0.00% across all 13 ablation versions |
+| Real-world query accuracy | 69.9% (93 user-phrased queries, held out from all tuning) |
+| False answer rate | **0.00%** across all 13 ablation versions |
 | False refusal rate | 0.00% in champion version |
 | RAGAS faithfulness | 0.914 |
 | RAGAS answer relevancy | 0.911 |
 | Avg latency | 1608ms (p50: 1165ms, p95: 4608ms) |
 
-The 0.8% gap between manual and holdout accuracy confirms 
-generalisation to unseen query phrasing. The zero false-answer 
-rate held across all promoted versions — the system never 
-confidently answers a question it cannot ground in retrieved 
-documentation.
+---
+
+## What I Built
+
+- **Retrieval pipeline** — hybrid dense (FAISS/all-MiniLM-L6-v2) + BM25 with RRF fusion; conditional cross-encoder reranking (ms-marco-MiniLM-L-6-v2) triggered only when top-2 score margin is narrow
+- **Confidence gate** — multi-stage decision logic (intent classification → score thresholds → mismatch detection → post-generation override) that routes every query to `answer`, `clarify`, or `refuse`
+- **Evaluation framework** — 3 independent test sets (manual, synthetic, holdout), 13 ablation versions tracked in MLflow, RAGAS for faithfulness and answer relevancy
+- **Production API** — FastAPI with `/health`, `/stats`, structured per-request logging, Docker + Compose support, per-stage latency breakdown in every response
 
 ---
 
 ## What It Does
 
 - **Corpus**: Python stdlib RST documentation, chunked and indexed
-- **Retrieval**: Hybrid dense (FAISS/all-MiniLM-L6-v2) + BM25, with optional cross-encoder reranking (ms-marco-MiniLM-L-6-v2)
 - **Decision logic**: Intent classification → confidence gate → GPT-4o-mini generation → post-generation refusal override
 - **Response types**: `answer`, `clarify`, or `refuse` — never a hallucinated answer
 - **Observability**: Every query logged to `logs/queries.jsonl`; `GET /stats` aggregates in real time
@@ -38,26 +44,80 @@ documentation.
 
 ```mermaid
 flowchart TD
-    A([User Query]) --> B[Intent Classifier]
-    B -->|out_of_domain| C([🚫 Refuse])
-    B -->|in_domain / ambiguous| D[Retriever]
+    A([User Query]) --> IC
 
-    D --> D1[Dense — FAISS\nall-MiniLM-L6-v2]
-    D --> D2[BM25\nrank-bm25]
-    D1 & D2 --> D3[Hybrid RRF Fusion]
+    subgraph STAGE1 ["① Intent Classification"]
+        IC{"OOD signals?\nStdlib anchor?\nPython-general?"}
+        IC_OUT["out_of_domain / python_general_out_of_scope\nconf >= 0.85"]
+        IC_PASS["in_domain / ambiguous\n→ continue to retrieval"]
+        IC -->|"refuse signals detected"| IC_OUT
+        IC -->|"pass"| IC_PASS
+    end
 
-    D3 --> E{Low score margin?}
-    E -->|yes| F[Cross-encoder Reranker\nms-marco-MiniLM-L-6-v2]
-    E -->|no| G[Confidence Gate]
-    F --> G
+    IC_OUT --> REFUSE([" Refuse"])
+    IC_PASS --> FETCH
 
-    G -->|score below threshold_low| C
-    G -->|score in middle band| H([💬 Clarify])
-    G -->|score above threshold_high| I[GPT-4o-mini Generator]
+    subgraph STAGE2 ["② Hybrid Retrieval"]
+        FETCH["Fetch candidates\n(x3 if dotted symbol in query)"]
+        DENSE["Dense Search\nFAISS · all-MiniLM-L6-v2"]
+        BM25N["BM25 Search\nrank-bm25"]
+        RRF_NODE["RRF Fusion\nscores re-scaled to dense range"]
+        SYM_CHK{"Dotted symbol\nin query?"}
+        SYM_RNK["Symbol Rerank\n+0.08 text/heading match\n+0.03 module match"]
+        MARGIN_CHK{"Top-2 score\nmargin < 0.15?"}
+        CE_NODE["Cross-encoder Reranker\nms-marco-MiniLM-L-6-v2\n12 candidates → top 5"]
+        TOP5["Top-5 hits"]
 
-    I --> J{Post-gen Refusal\nOverride}
-    J -->|refusal detected| C
-    J -->|grounded answer| K([✅ Answer + Citations])
+        FETCH --> DENSE & BM25N
+        DENSE & BM25N --> RRF_NODE
+        RRF_NODE --> SYM_CHK
+        SYM_CHK -->|yes| SYM_RNK
+        SYM_CHK -->|no| MARGIN_CHK
+        SYM_RNK --> MARGIN_CHK
+        MARGIN_CHK -->|yes — narrow margin| CE_NODE
+        MARGIN_CHK -->|no — clear winner| TOP5
+        CE_NODE --> TOP5
+    end
+
+    TOP5 --> GATE_IN
+
+    subgraph STAGE3 ["③ Confidence Gate  (th_high = 0.40 · th_low = 0.25)"]
+        GATE_IN{"top score s"}
+        MISMATCH["Mismatch Classifier\nmodule conflict · symbol gap\nfragmented evidence"]
+        G_REFUSE["→ refuse"]
+        G_CLARIFY["→ clarify"]
+        G_ANSWER["→ answer"]
+
+        GATE_IN -->|"s < 0.25"| G_REFUSE
+        GATE_IN -->|"s >= 0.25"| MISMATCH
+        MISMATCH -->|"hard mismatch"| G_REFUSE
+        MISMATCH -->|"s >= 0.40, clean evidence"| G_ANSWER
+        MISMATCH -->|"s >= 0.40, recoverable mismatch\nor competing topics"| G_CLARIFY
+        MISMATCH -->|"0.25 <= s < 0.40"| G_CLARIFY
+    end
+
+    G_REFUSE --> REFUSE
+    G_CLARIFY --> CLARIFY([" Clarify"])
+    G_ANSWER --> GEN_IN
+
+    subgraph STAGE4 ["④ Generation + Post-gen Guard"]
+        GEN_IN["GPT-4o-mini · temp = 0.0\nformatted chunks as context"]
+        CITE_PARSE["Parse citation IDs from answer text\ne.g. [1], [1][2], [1, 2]"]
+        REF_CHK{"Refusal text\ndetected in answer?"}
+        RESCUE{"Narrow rescue check:\nstrong stdlib coherence\n+ grounded signal\n+ no OOD intent"}
+        FINAL_ANS["answer + citations"]
+        POST_REFUSE["→ refuse"]
+
+        GEN_IN --> CITE_PARSE
+        CITE_PARSE --> REF_CHK
+        REF_CHK -->|no| FINAL_ANS
+        REF_CHK -->|yes| RESCUE
+        RESCUE -->|rescue passes| FINAL_ANS
+        RESCUE -->|rescue fails| POST_REFUSE
+    end
+
+    FINAL_ANS --> OUT([" Answer + Citations"])
+    POST_REFUSE --> REFUSE
 ```
 
 ## Prerequisites
