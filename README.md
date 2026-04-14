@@ -337,7 +337,7 @@ versions. Each category has a root cause and resolution status.
 | F — Score-driven instability | Similar scores producing inconsistent decisions | Score overloaded as proxy for confidence and intent | Resolved — v1 intent classifier |
 | G — Lexical mismatch | Paraphrased queries scoring below threshold | General-purpose embedding model vocabulary gap | Partially resolved — v5 and v9 |
 
-Two residual failures remain — corpus boundary cases where 
+Two residual failures remain: corpus boundary cases where 
 concepts appear tangentially in documentation (e.g. GIL 
 mentioned in threading docs) but fall outside the system's 
 intended scope.
